@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/spike-clone/static/css/main.12cf2ae4.css",
+    "main.js": "/spike-clone/static/js/main.a8762d8f.js",
+    "static/media/telephone.jpg": "/spike-clone/static/media/telephone.784d6a51536d27d2e90d.jpg",
+    "static/media/chatting.png": "/spike-clone/static/media/chatting.da2f6b1e6707119bf14f.png",
+    "index.html": "/spike-clone/index.html",
+    "main.12cf2ae4.css.map": "/spike-clone/static/css/main.12cf2ae4.css.map",
+    "main.a8762d8f.js.map": "/spike-clone/static/js/main.a8762d8f.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.12cf2ae4.css",
+    "static/js/main.a8762d8f.js"
+  ]
+}
