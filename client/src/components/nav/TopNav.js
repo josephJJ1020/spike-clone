@@ -5,15 +5,18 @@ import styles from "./Nav.module.css";
 import { Link } from "react-router-dom";
 
 export default function TopNav() {
-  const { userId, logOut } = useContext(AppContext);
+  const { userData, userId, logOut } = useContext(AppContext);
   return (
     <nav className={styles.TopNav}>
-      <div>Spike Clone</div>
+      <div><Link to='/'>Spike Clone</Link></div>
       <ul>
         {userId ? (
           <>
             <li>{userId}</li>
-            <li><Link onClick={logOut}>Log Out</Link></li>
+            <li>{userData.lastName}</li>
+            <li>
+              <Link onClick={logOut}>Log Out</Link>
+            </li>
           </>
         ) : (
           <>

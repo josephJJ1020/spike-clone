@@ -1,6 +1,7 @@
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const controller = require("./controllers/controller");
+const { controller } = require("./controllers/controller");
+const msgController = require("./controllers/msgController");
 
 const mongoose = require("mongoose");
 
@@ -27,8 +28,6 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3001;
 
 let onlineUsers = []; // list of online users
-let conversations = []; // list of conversations
-let messages = [];
 
 /* 
 
@@ -46,93 +45,51 @@ conversation shape:
 
 */
 
+/* -------------------------- SOCKET SIGNALING SERVER -------------------------- */
+
 io.on("connection", (socket) => {
   // console.log(`users: ${onlineUsers.length}`);
 
   socket.on("user-connection", (Id) => {
     if (Id) {
-      // let user = users.find((existingUser) => existingUser.id === Id);
-
-      // if (user) {
-      //   console.log(user.id);
-      //   currentUser = user;
-      //   user.socketId = socket.id;
-      //   onlineUsers.push(user);
-      // } else {
-      //   let user = { id: Id, socketId: socket.id };
-      //   currentUser = user;
-      //   console.log("added new user");
-      //   users.push(user);
-      //   onlineUsers.push(user);
-      // }
       onlineUsers.push({ id: Id, socketId: socket.id });
 
-      // console.log(`line 61: `, JSON.stringify(currentUser));
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
     }
   });
 
   // fetch user conversations and send it to newly connected user; takes in user id; maybe should execute this code on user connection
-  socket.on("load-conversations", (id) => {
-    let userConvos = [];
+  socket.on("load-conversations", async (userId) => {
+    const conversations = await msgController.getUserConversations(userId);
 
-    if (conversations) {
-      conversations.forEach((convo) => {
-        let user = convo.participants.find(
-          (existingUser) => existingUser.id === id
-        );
-        if (user) {
-          userConvos.push(convo);
-        }
-        io.to(socket.id).emit("load-conversations", userConvos);
-      });
-    } else {
-      console.log("no conversations yet");
-    }
+    conversations.forEach((conversation) => {
+      socket.join(conversation._id); // add user to each conversation channel (uses conversation id as socket.io room id)
+    });
+
+    io.to(socket.id).emit("load-conversations", conversations);
   });
 
   // create new conversation (1 on 1 or group chat)
-  socket.on("create-conversation", (data) => {
-    const newConversation = {
-      // create new conversation
-      id: data.id,
-      participants: data.participants, // must be an array of user objects
-      messages: [
-        // {
-        //   author: null,
-        //   message: {from: null, to: null, message: null},
-        // },
-      ],
-    };
-
-    conversations.push(newConversation); // add conversation to conversations list
-
-    newConversation.participants.forEach((participant) => {
-      io.to(participant.socketId).emit("new-conversation", newConversation); // send the new conversation object to participants
-    });
+  socket.on("create-conversation", async (users) => {
+    const newConversation = msgController.makeConversation(users);
+    // TODO: join all participants in the conversation to socket.io room (socket.io room = conversation._id)
 
     // participants will add this new conversation to their conversations list in the frontend
   });
 
   // send new message
-  socket.on("new-message", (message) => {
-    // let convo = conversations.find((convo) => convo.id === message.convoId); // find convo Id in conversations list
-    // convo.messages.push(message.msg); // add a new message to the conversation
-    // convo.participants.forEach((participant) => {
-    //   // send new message to convo participants if they're online
-    //   if (onlineUsers.includes(participant)) {
-    //     io.to(participant.socketId).emit("new-message", {
-    //       convoId: convo.id,
-    //       msg: message.msg,
-    //     });
-    //   }
-    // });
-    // participant will then add this message to the appropriate convo in their conversations list in the frontend
-    console.log(message);
-    messages.push(message);
-    io.to(message.from.socketId).emit("new-message", message);
-    io.to(message.to.socketId).emit("new-message", message);
+  socket.on("new-message", async (user, message, convoId) => {
+    const newConversation = await msgController.addMessage(
+      user,
+      message,
+      convoId
+    );
+
+    // remember we are using convoId as socket.io room; send this new conversation to all participants via their sockets
+    io.sockets.in(convoId).emit("new-message", newConversation);
+
+    // participant will then add this new convo to conversations list in the frontend
   });
 
   socket.on("disconnect", () => {
@@ -142,11 +99,7 @@ io.on("connection", (socket) => {
   });
 });
 
-/*
-
-BACKEND ROUTES
-
-*/
+/* -------------------------- BACKEND ROUTES -------------------------- */
 
 // user signup
 app.post("/signup", async (req, res) => {
@@ -192,7 +145,7 @@ app.post("/login", async (req, res) => {
     try {
       console.log(`id: ${id}`);
       const userData = await controller.searchUser(id);
-      console.log(userData)
+      console.log(userData);
       return res.send(userData);
     } catch (err) {
       return res.send(err);
@@ -217,6 +170,8 @@ app.post("/login", async (req, res) => {
   }
 });
 
+
+// handle invalid routes
 app.use((req, res) => {
   res.send("Nothing to see here :)");
 });

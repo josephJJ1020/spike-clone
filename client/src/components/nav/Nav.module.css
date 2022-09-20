@@ -19,6 +19,6 @@
 .TopNav ul {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
     height: 100%;
 }

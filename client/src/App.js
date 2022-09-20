@@ -16,15 +16,13 @@ import HomePage from "./components/home/HomePage";
 import Login from "./components/auth/Login";
 import SignUp from "./components/auth/SignUp";
 import Footer from "./components/nav/Footer";
+import PageNotFound from "./components/PageNotFound";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
 
 function App() {
   const mountedRef = useRef(true);
-  const x = async (userId) => {
-    return await getAuth({ id: userId });
-  };
 
   const [userId, setUserId] = useState(
     sessionStorage.getItem("userId") === "null"
@@ -33,8 +31,10 @@ function App() {
   );
   console.log(userId);
   const [currUserData, setCurrUserData] = useState(
-    x(sessionStorage.getItem("userId"))
-  ); // returns user and error
+    sessionStorage.getItem("userDetails") === "null"
+      ? null
+      : JSON.parse(sessionStorage.getItem("userDetails"))
+  );
 
   const [connected, setConnected] = useState(false);
   const [user, setUser] = useState({ id: null, socketId: null });
@@ -137,9 +137,8 @@ function App() {
     });
     if (userData.userData.id) {
       sessionStorage.setItem("userId", userData.userData.id);
+      sessionStorage.setItem("userDetails", userData.userData);
     }
-    console.log(sessionStorage.getItem("userId"));
-    setCurrUserData(userData);
     window.location.reload();
   };
 
@@ -151,21 +150,21 @@ function App() {
     });
     if (userData.userData.id) {
       sessionStorage.setItem("userId", userData.userData.id);
-      setCurrUserData(userData);
+      sessionStorage.setItem("userDetails", JSON.stringify(userData.userData));
     }
-    console.log(sessionStorage.getItem("userId"));
     window.location.reload();
   };
 
   const logOut = () => {
     sessionStorage.setItem("userId", null);
+    sessionStorage.setItem("userDetails", null);
     window.location.reload();
   };
 
   return (
     <AppContext.Provider
       value={{
-        user,
+        userData: currUserData,
         userId,
         receiver,
         messages,
@@ -195,6 +194,7 @@ function App() {
               path="/signup"
               element={userId ? <Navigate to="/" /> : <SignUp />}
             />
+            <Route path="*" element={<PageNotFound />} />
           </Routes>
           <Footer />
         </main>

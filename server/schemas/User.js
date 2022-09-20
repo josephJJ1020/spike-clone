@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: "Email is required",
     validate: [validateEmail, "Please enter a valid email"],
-    unique: true
+    unique: true,
   },
 
   password: {
@@ -40,7 +40,12 @@ const UserSchema = new mongoose.Schema({
   friends: {
     type: Array,
     default: [],
-  }
+  },
+  
+  conversations: {
+    type: Array,
+    default: [],
+  },
 });
 
-module.exports = UserSchema
+module.exports = UserSchema;

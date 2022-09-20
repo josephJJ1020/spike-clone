@@ -23,8 +23,8 @@ export default function SignUp() {
   return (
     <section className={styles.SignUpPage}>
       <header>
-        <h1>Sign Up</h1>
-        <p>Upgrade your email experience with <strong>Spike Clone</strong></p>
+        <h1>Upgrade your email experience with <strong>Spike Clone</strong></h1>
+        <p>Sign up now</p>
       </header>
 
       <form className={styles.SignUpForm}>

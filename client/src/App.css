@@ -6,6 +6,10 @@
   display: flex;
 }
 
+.container {
+  min-height: 100vh;
+}
+
 input, button {
   padding: 12px;
 }
