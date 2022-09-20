@@ -1,6 +1,6 @@
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { controller } = require("./controllers/controller");
+const { controller, User } = require("./controllers/controller");
 const msgController = require("./controllers/msgController");
 
 const mongoose = require("mongoose");
@@ -29,30 +29,19 @@ const PORT = process.env.PORT || 3001;
 
 let onlineUsers = []; // list of online users
 
-/* 
-
-conversation shape:
-{
-  id: convoId (created server side with uuid),
-  participants: [list of participants (uses socket Id )],
-  messages: [
-    {
-      author: socket.id,
-      message: `${socket.id} created a conversation!`,
-    },
-  ],
-};
-
-*/
-
 /* -------------------------- SOCKET SIGNALING SERVER -------------------------- */
 
 io.on("connection", (socket) => {
   // console.log(`users: ${onlineUsers.length}`);
 
-  socket.on("user-connection", (Id) => {
-    if (Id) {
-      onlineUsers.push({ id: Id, socketId: socket.id });
+  socket.on("user-connection", (data) => {
+    if (data.id) {
+      onlineUsers.push({
+        id: data.id,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        socketId: socket.id,
+      });
 
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
@@ -79,17 +68,77 @@ io.on("connection", (socket) => {
   });
 
   // send new message
-  socket.on("new-message", async (user, message, convoId) => {
+  socket.on("new-message", async ({ user, message, convoId }) => {
     const newConversation = await msgController.addMessage(
       user,
       message,
       convoId
     );
 
+    onlineUsers.forEach((user) => {
+      if (newConversation.participants.includes(user.id)) {
+        if (Object.keys(io.sockets.sockets).includes(user.socketId)) {
+          io.sockets.connected[user.socketId].join(newConversation._id);
+        }
+      }
+    });
+
     // remember we are using convoId as socket.io room; send this new conversation to all participants via their sockets
-    io.sockets.in(convoId).emit("new-message", newConversation);
+    io.sockets.in(newConversation._id).emit("new-message", newConversation);
 
     // participant will then add this new convo to conversations list in the frontend
+  });
+
+  // takes in receiverId, requesterId
+  socket.on("friend-request", async (data) => {
+    try {
+      // save a notification of type 'friend-request' to receiver's notification list
+      const friendRequest = await controller.sendFriendRequest(
+        data.requesterId,
+        data.receiverId
+      );
+
+      // send friend request event to receiver through their socket
+      const onlineUser = onlineUsers.find(
+        (user) => user.id === data.receiverId
+      );
+      if (onlineUser) {
+        console.log("friend request sent! ");
+        io.to(onlineUser.socketId).emit("friend-request", friendRequest);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  socket.on("friend-request-action", async (data) => {
+    try {
+      const notifs = await controller.handleFriendRequest(data);
+      console.log(notifs);
+      // update both sender and receiver notifications
+      if (notifs.senderData && notifs.accepterData) {
+        console.log("friend request accepted!");
+        onlineUsers.forEach((user) => {
+          // look for user who accepted the friend request (data.sender)
+          if (user.id === data.sender) {
+            io.to(user.socketId).emit(
+              "accept-friend-request",
+              notifs.accepterData
+            );
+          } else if (user.id === data.receiver) {
+            // look for user who sent the friend request (data.receiver)
+            io.to(user.socketId).emit(
+              "accept-friend-request",
+              notifs.senderData
+            );
+          }
+        });
+      } else {
+        io.to(socket.id).emit("reject-friend-request", notifs.accepterData);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -124,6 +173,7 @@ app.post("/signup", async (req, res) => {
       email,
       password,
     });
+
     console.log(newUser);
     return res.send(newUser);
   } catch (err) {
@@ -156,10 +206,17 @@ app.post("/login", async (req, res) => {
     console.log("someone logged in!");
     try {
       const userData = await controller.searchUser({ email, password });
-      return res.send(userData);
+
+      console.log(userData);
+      if (userData) {
+        return res.send(userData);
+      } else {
+        return res.status(409).send("Failed to find user!");
+      }
+
+      // can't find user
     } catch (err) {
-      console.log(err);
-      return res.send(err);
+      return res.status(409).send("Failed to find user!");
     }
   }
 
@@ -169,7 +226,6 @@ app.post("/login", async (req, res) => {
     return res.send(new Error("No ID, email, or password specified"));
   }
 });
-
 
 // handle invalid routes
 app.use((req, res) => {

@@ -1,5 +1,6 @@
-// use to get user data from the server
+import validator from "email-validator";
 
+// use to get user data from the server
 export const getAuth = async ({
   id = null,
   email,
@@ -18,15 +19,38 @@ export const getAuth = async ({
 
   let error = null;
 
-  if (!id && !email) {
-    console.log("no id or email");
-    error = setError(new Error("Please provide user ID or email"));
+  if ([id, email, firstName, lastName].every((item) => !item)) {
+    error = setError(new Error("Please provide credentials"));
+    return { userData, error };
+  }
+
+  if (action === "LOGIN") {
+    if (!id && !email) {
+      console.log("no id or email");
+      error = setError(new Error("Please provide credentials"));
+      return { userData, error };
+    }
+
+    if ((email && !password) || (!email && password)) {
+      error = setError(new Error("Please complete login credentials"));
+      return { userData, error };
+    }
+  }
+
+  if (action === "SIGNUP" && (!email || !password || !firstName || !lastName)) {
+    error = setError(new Error("Incomplete signup credentials."));
+    return { userData, error };
+  }
+
+  if (!validator.validate(email)) {
+    error = setError(new Error("Invalid email."));
     return { userData, error };
   }
 
   switch (action) {
     case "LOGIN":
       console.log("login");
+
       await fetchUserData({
         uri: process.env.REACT_APP_LOGIN_URI,
         email: email,
@@ -36,15 +60,19 @@ export const getAuth = async ({
           return data.json();
         })
         .then((user) => {
+          // if (user.error) {
+          //   setError(user.error);
+          //   return;
+          // }
+          console.log(user)
           userData = setUser({
-            id: user.id,
-            email: user.email,
-            firstName: user.first,
-            lastName: user.lastName,
-            password: user.password,
+            user,
           });
         })
-        .catch((err) => (error = setError(err)));
+        .catch(
+          (err) =>
+            (error = setError(new Error("User not found, please try again.")))
+        );
 
       break;
 
@@ -58,20 +86,24 @@ export const getAuth = async ({
       })
         .then((data) => data.json())
         .then((user) => {
+          if (userData.error) {
+            setError(userData.error);
+            return;
+          }
           userData = setUser({
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            password: user.password,
-            friends: user.friends,
+            user,
           });
+
+          console.log(userData);
         })
-        .catch((err) => (error = setError(err)));
+        .catch(
+          (err) =>
+            (error = setError(new Error("User not found, please try again.")))
+        );
       break;
 
     default:
-      fetchUserData({uri: process.env.REACT_APP_LOGIN_URI, id: id})
+      fetchUserData({ uri: process.env.REACT_APP_LOGIN_URI, id: id })
         .then((data) => data.json())
         .then((user) => {
           userData = setUser({
@@ -82,7 +114,10 @@ export const getAuth = async ({
             friends: user.friends,
           });
         })
-        .catch((err) => setError(err));
+        .catch(
+          (err) =>
+            (error = setError(new Error("User not found, please try again.")))
+        );
   }
 
   return { userData, error };

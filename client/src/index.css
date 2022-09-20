@@ -26,3 +26,7 @@ code {
 h1 {
   font-family: 'Poppins', sans-serif;
 }
+
+.alert {
+  margin: 0;
+}

@@ -22,3 +22,20 @@
     gap: 20px;
     height: 100%;
 }
+
+.TopNav ul li {
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+
+.transparent .notifIcon {
+    height: 30px;
+    cursor: pointer;
+}
+
+.transparent, .transparent:hover, .transparent:focus-within {
+    background-color: transparent;
+    border: none;
+    height: 30%;
+}

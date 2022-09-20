@@ -17,6 +17,7 @@ import Login from "./components/auth/Login";
 import SignUp from "./components/auth/SignUp";
 import Footer from "./components/nav/Footer";
 import PageNotFound from "./components/PageNotFound";
+import FlashMessage from "./components/flash/FlashMessage";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
@@ -29,7 +30,6 @@ function App() {
       ? null
       : sessionStorage.getItem("userId")
   );
-  console.log(userId);
   const [currUserData, setCurrUserData] = useState(
     sessionStorage.getItem("userDetails") === "null"
       ? null
@@ -38,18 +38,19 @@ function App() {
 
   const [connected, setConnected] = useState(false);
   const [user, setUser] = useState({ id: null, socketId: null });
+
   const [onlineUsers, setOnlineUsers] = useState([]);
+
   const [conversations, setConversations] = useState([]);
+
   const [messages, setMessages] = useState([]); // delete later
+
   const [receiver, setReceiver] = useState(null);
+  const [currentConvo, setCurrentConvo] = useState(null);
+
+  const [flashMsg, setFlashMsg] = useState(null);
 
   useEffect(() => {
-    console.log(userId);
-    console.log(typeof userId);
-    // console.log(currUserData.userData.email)
-
-    console.log(`currUserData: ${currUserData}`);
-
     // set socket listeners
     clientSocket.on("connect", () => {
       console.log("connected!");
@@ -57,10 +58,20 @@ function App() {
     });
 
     clientSocket.on("onlineUsers", (data) => {
-      setOnlineUsers(data); // should be an array of user objects with id and socketId
+      setOnlineUsers(data.filter((user) => user.id !== userId)); // should be an array of user objects with id and socketId
     });
 
     clientSocket.on("disconnect", () => {});
+
+    if (currUserData) {
+      clientSocket.emit("user-connection", {
+        id: userId,
+        firstName: currUserData.firstName,
+        lastName: currUserData.lastName,
+      });
+      clientSocket.emit("load-conversations", userId); // load conversations of user
+    }
+
     return () => {
       // remove listeners in cleanup in order to prevent multiple event registrations
       clientSocket.off("connect");
@@ -71,60 +82,91 @@ function App() {
 
   useEffect(() => {
     clientSocket.on("load-conversations", (data) => {
-      console.log("received conversations!");
       setConversations(data); // should be an array
     });
 
     clientSocket.on("new-message", (data) => {
-      // // should be obejct with convoId and msg keys
-      // let conversation = conversations.find(
-      //   (convo) => convo.id === data.convoId
-      // );
-
-      // if (conversation) {
-      //   conversation.messages.push(data.msg);
-
-      //   // update conversation in conversations list
-      //   setConversations(
-      //     conversations.map((convo) =>
-      //       convo.id === data.convoId ? conversation : { ...convo }
-      //     )
-      //   );
-      // } else {
-      //   console.log(`can't find conversation with id ${data.convoId}`);
-      // }
-      console.log(messages);
-      const newMessages = [...messages, data];
-      setMessages(newMessages);
+      const newConversations = [...conversations, data];
+      setConversations(newConversations);
     });
 
     clientSocket.on("new-conversation", (newConversation) => {
       setConversations([...conversations, newConversation]); // should be a conversation object with id, participants, and messages keys
     });
 
-    console.log(`connected: ${connected}`);
-  }, [messages, conversations, connected]);
+    clientSocket.on("friend-request", (data) => {
+      console.log(data);
 
-  useEffect(() => {
-    if (mountedRef.current) {
-      mountedRef.current = false;
-    } else {
-      clientSocket.emit("user-connection", userId); // add user to online users in backend
-      console.log("emitting user-connection event");
-      clientSocket.emit("load-conversations", userId); // load conversations of user
-    }
-  }, [userId]);
+      if (currUserData) {
+        const newNotifications = [...currUserData.notifications, data];
 
-  useEffect(() => {
-    if (mountedRef.current) {
-      mountedRef.current = false;
-    } else {
-      console.log(currUserData);
+        sessionStorage.setItem(
+          "userDetails",
+          JSON.stringify({ ...currUserData, notifications: newNotifications })
+        );
+
+        setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+      }
+    });
+
+    // receives new array of notifications
+    clientSocket.on("accept-friend-request", (data) => {
+      console.log(data);
+      // check if there is data sent
+
+      if (data) {
+        if (currUserData) {
+          // replace user notifications in session storage
+          sessionStorage.setItem(
+            "userDetails",
+            JSON.stringify({
+              ...currUserData,
+              notifications: data.notifications,
+              friends: data.friends,
+            })
+          );
+
+          setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+        }
+      }
+    });
+
+    clientSocket.on("reject-friend-request", (data) => {
+      console.log(data);
+      // check if there is data sent
+
+      if (data) {
+        if (currUserData) {
+          // replace user notifications in session storage
+          sessionStorage.setItem(
+            "userDetails",
+            JSON.stringify({
+              ...currUserData,
+              notifications: data.notifications,
+            })
+          );
+
+          setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+        }
+      }
+    });
+
+    if (currUserData) {
+      console.log(currUserData.notifications);
     }
-  }, [currUserData]);
+  }, [messages, conversations, connected, currUserData]);
 
   const sendMessage = (message) => {
-    clientSocket.emit("new-message", message);
+    clientSocket.emit("new-message", {
+      user: {
+        id: userId,
+      },
+      message: {
+        to: receiver,
+        content: message,
+      },
+      convoId: null,
+    });
   };
 
   const signUp = async (email, password, firstName, lastName) => {
@@ -135,11 +177,17 @@ function App() {
       lastName: lastName,
       action: "SIGNUP",
     });
-    if (userData.userData.id) {
-      sessionStorage.setItem("userId", userData.userData.id);
-      sessionStorage.setItem("userDetails", userData.userData);
+    if (userData.error) {
+      setFlashMsg({ type: "error", message: userData.error.message });
+      return;
+    } else if (userData) {
+      sessionStorage.setItem("userId", userData.userData.user._id);
+      sessionStorage.setItem(
+        "userDetails",
+        JSON.stringify(userData.userData.user)
+      );
+      window.location.reload();
     }
-    window.location.reload();
   };
 
   const logIn = async (formEmail, formPassword) => {
@@ -148,17 +196,36 @@ function App() {
       password: formPassword,
       action: "LOGIN",
     });
-    if (userData.userData.id) {
-      sessionStorage.setItem("userId", userData.userData.id);
-      sessionStorage.setItem("userDetails", JSON.stringify(userData.userData));
+
+    if (userData.error) {
+      setFlashMsg({ type: "error", message: userData.error.message });
+      return;
+    } else if (userData) {
+      sessionStorage.setItem("userId", userData.userData.user._id);
+      sessionStorage.setItem(
+        "userDetails",
+        JSON.stringify(userData.userData.user)
+      );
+      window.location.reload();
     }
-    window.location.reload();
   };
 
   const logOut = () => {
     sessionStorage.setItem("userId", null);
     sessionStorage.setItem("userDetails", null);
     window.location.reload();
+  };
+
+  const sendFriendRequest = (requesterId, receiverId) => {
+    clientSocket.emit("friend-request", {
+      requesterId: requesterId,
+      receiverId: receiverId,
+    });
+  };
+
+  const friendRequestAction = (data) => {
+    console.log("friend request action");
+    clientSocket.emit("friend-request-action", data);
   };
 
   return (
@@ -176,11 +243,18 @@ function App() {
         signUp,
         logIn,
         logOut,
+        flashMsg,
+        setFlashMsg,
+        currentConvo,
+        setCurrentConvo,
+        sendFriendRequest,
+        friendRequestAction,
       }}
     >
       <Router>
         <main className="App">
           <TopNav />
+          {flashMsg && <FlashMessage />}
           <Routes>
             <Route
               path="/"

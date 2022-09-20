@@ -1,0 +1,23 @@
+.Subject {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  padding: 5px;
+}
+
+.noActiveConvo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+
+.noActiveConvo img {
+  margin-top: 70px;
+  max-height: 500px;
+  filter: drop-shadow(0 50px 50px gray);
+}

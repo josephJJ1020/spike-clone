@@ -1,0 +1,69 @@
+.Contacts {
+  margin: 50px 0;
+}
+
+.Conversations {
+  margin: 20px 0;
+}
+
+.Conversation {
+  border-top: 1px solid white;
+  border-bottom: 1px solid white;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.Conversations h2 {
+  margin-bottom: 20px;
+}
+
+.onlineCircle {
+  width: 10px;
+  height: 10px;
+  background-color: green;
+  border-radius: 50%;
+}
+
+.ContactDetails {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.ContactAction {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+}
+
+.ContactAction img {
+  height: 20px;
+}
+
+.FriendRequestSent {
+  padding: 3px 10px;
+  position: absolute;
+  z-index: 1;
+  left: 100%;
+  background-color: #fa6121;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transform-origin: bottom left;
+  height: 100%;
+  animation: fadeIn .3s ease alternate;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: scale(0.1);
+  }
+}

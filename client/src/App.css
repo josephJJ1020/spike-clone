@@ -85,6 +85,7 @@ a:hover {
   flex-grow: 1;
   background: cadetblue;
   border-right: 1px solid rgb(240, 234, 214);
+  max-width: 340px;
 }
 
 .Contact {
@@ -93,5 +94,9 @@ a:hover {
   border: 1px solid gray;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 20px;
   padding: 0 12px;
+  position: relative;
+  z-index: 2;
 }

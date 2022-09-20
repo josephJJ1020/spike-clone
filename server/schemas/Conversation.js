@@ -11,7 +11,7 @@ const Conversation = new mongoose.Schema({
         required: 'Conversation must include participants'
     },
     messages: {
-        type: [Object],
+        type: Array,
         default: [],
     }
     

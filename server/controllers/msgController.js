@@ -26,9 +26,9 @@ const msgController = {
     return Conversation.findById(newConvo._id);
   },
 
-  // add message to conversation; takes in user {id, firstName, lastName}, message {conversationId, id (created with uuid), to, from, content}
+  // add message to conversation; takes in user {id}, message {conversationId, id (created with uuid), to, from, content}
   // and conversation id
-  // message.to format: {id, firstName, lastName}
+  // message.to format: {id}
 
   addMessage: async (user, message, convoId) => {
     // check if conversation id is specified; if not, make new one (might delete this one later)
@@ -37,6 +37,7 @@ const msgController = {
         participants: [message.to.id, user.id],
         messsages: [
           {
+            conversationId: null,
             id: uuid().slice(0, 6),
             from: user,
             content: message.content,
@@ -45,9 +46,10 @@ const msgController = {
         ],
       });
       
-      convo.messages[0].conversationId = convo._id;
       await convo.save();
-      return await Conversation.findById(convo._id);
+
+      let newConvo = await Conversation.findById(convo._id);
+      return newConvo;
     }
 
     let convo = await Conversation.findById(convoId);
