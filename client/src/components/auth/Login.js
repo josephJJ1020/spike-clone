@@ -7,22 +7,36 @@ import { useInput } from "../hooks/useInput";
 import styles from "./Auth.module.css";
 
 export default function Login() {
-  const { logIn } = useContext(AppContext);
+  const { logIn, setFlashMsg } = useContext(AppContext);
 
   const [emailProps, resetEmail] = useInput("");
   const [pwProps, resetpw] = useInput("");
 
   const submit = (e) => {
     e.preventDefault();
-    logIn(emailProps.value, pwProps.value)
-    resetEmail()
-    resetpw()
+    var email = emailProps.value.replace(/\s/g, ""),
+      pw = pwProps.value.replace(/\s/g, "");
+
+    if (!email || !email.length) {
+      setFlashMsg({ type: "error", message: "Email must not be empty" });
+      return;
+    }
+
+    if (!pw || !pw.length) {
+      setFlashMsg({ type: "error", message: "Password must not be empty" });
+      return;
+    }
+    logIn(email, pw);
+    resetEmail();
+    resetpw();
   };
 
   return (
     <div className={`${styles.LoginPage}`}>
       <div className={styles.Left}>
-        <strong><h1 className={styles.Title}>Spike Clone</h1></strong>
+        <strong>
+          <h1 className={styles.Title}>Spike Clone</h1>
+        </strong>
         <p>Level up your email game</p>
       </div>
       <form className={styles.LoginForm}>
@@ -33,6 +47,7 @@ export default function Login() {
           name="email"
           id="email"
           className="form-control"
+          placeholder="Enter email"
           {...emailProps}
         />
 
@@ -42,10 +57,17 @@ export default function Login() {
           name="pw"
           id="pw"
           className="form-control"
+          placeholder="Enter password"
           {...pwProps}
         />
+        {}
 
-        <input type="submit" value="Sign in" className="btn btn-primary" onClick={submit}/>
+        <input
+          type="submit"
+          value="Sign in"
+          className="btn btn-primary"
+          onClick={submit}
+        />
         <p>
           Don't have an account? <Link to="/signup">Sign up</Link>
         </p>
