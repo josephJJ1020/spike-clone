@@ -26,7 +26,7 @@ export const getAuth = async ({
 
   if (action === "LOGIN") {
     if (!id && !email) {
-      console.log("no id or email");
+      console.log("No email provided");
       error = setError(new Error("Please provide credentials"));
       return { userData, error };
     }

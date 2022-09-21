@@ -177,6 +177,7 @@ function App() {
       lastName: lastName,
       action: "SIGNUP",
     });
+    if (flashMsg) return
     if (userData.error) {
       setFlashMsg({ type: "error", message: userData.error.message });
       return;
@@ -196,7 +197,7 @@ function App() {
       password: formPassword,
       action: "LOGIN",
     });
-
+    if (flashMsg) return
     if (userData.error) {
       setFlashMsg({ type: "error", message: userData.error.message });
       return;

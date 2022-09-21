@@ -5,7 +5,7 @@ import { AppContext } from "../../context";
 import { useContext } from "react";
 
 export default function SignUp() {
-  const { signUp } = useContext(AppContext);
+  const { signUp, setFlashMsg } = useContext(AppContext);
   const [firstName, setFirstName] = useInput("");
   const [lastName, setLastName] = useInput("");
   const [email, setEmail] = useInput("");
@@ -13,17 +13,41 @@ export default function SignUp() {
 
   const submit = (e) => {
     e.preventDefault();
-    signUp(email.value, pw.value, firstName.value, lastName.value)
-    setFirstName("")
-    setLastName("")
-    setEmail("")
-    setPw("")
+    var trimmedFirstName = firstName.value.replace(/\s/g, ""),
+      trimmedLastName = lastName.value.replace(/\s/g, ""),
+      trimmedEmail = email.value.replace(/\s/g, ""),
+      trimmedPw = pw.value.replace(/\s/g, "");
+
+    if (!trimmedFirstName.length || !trimmedLastName.length) {
+      setFlashMsg({ type: "error", message: "Name fields must not be empty" });
+      return;
+    } else if (!trimmedEmail.length) {
+      setFlashMsg({ type: "error", message: "Email must not be empty" });
+      return;
+    } else if (!trimmedPw || !trimmedPw.length) {
+      setFlashMsg({ type: "error", message: "Password must not be empty" });
+      return;
+    } else if (trimmedPw.length < 8) {
+      setFlashMsg({
+        type: "error",
+        message: "Password must be more less than 8 characters ",
+      });
+      return;
+    }
+
+    signUp(trimmedEmail, trimmedPw, trimmedFirstName, trimmedLastName);
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setPw("");
   };
 
   return (
     <section className={styles.SignUpPage}>
       <header>
-        <h1>Upgrade your email experience with <strong>Spike Clone</strong></h1>
+        <h1>
+          Upgrade your email experience with <strong>Spike Clone</strong>
+        </h1>
         <p>Sign up now</p>
       </header>
 
@@ -64,7 +88,12 @@ export default function SignUp() {
           {...pw}
         />
 
-        <input type="submit" value="Sign Up" className="btn btn-primary" onClick={submit}/>
+        <input
+          type="submit"
+          value="Sign Up"
+          className="btn btn-primary"
+          onClick={submit}
+        />
         <p>
           Already have an account? <Link to="/login">Sign In</Link>
         </p>
