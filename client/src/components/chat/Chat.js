@@ -8,8 +8,8 @@ import styles from "./Chat.module.css";
 import cat from "../../images/cat.png";
 
 export default function Chat() {
-  const { global } = useSelector((state) => state.global);
-  const { onlineUsers } = useSelector((state) => state.onlineUsers);
+  const global = useSelector((state) => state.global);
+  const onlineUsers = useSelector((state) => state.onlineUsers);
 
   return (
     <div className="Chat">

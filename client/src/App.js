@@ -27,12 +27,10 @@ import { setConversations } from "./store/slices/conversationsSlice";
 const clientSocket = io("http://localhost:3001");
 
 function App() {
-  const mountedRef = useRef(true);
-
   // redux states
-  const { userDataSlice } = useSelector((state) => state.userData);
-  const { conversationsSlice } = useSelector((state) => state.conversations);
-  const { globalSlice } = useSelector((state) => state.global);
+  const userDataSlice = useSelector((state) => state.userData);
+  const conversationsSlice = useSelector((state) => state.conversations);
+  const globalSlice = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -183,7 +181,7 @@ function App() {
     clientSocket.emit("friend-request-action", data);
   };
 
-  console.log(userDataSlice)
+  console.log(userDataSlice);
   /*<AppContext.Provider
       value={{
         sendMessage, // controller
@@ -192,7 +190,9 @@ function App() {
       }}
     > */
   return (
-    
+    <AppContext.Provider
+      value={{ sendMessage, sendFriendRequest, friendRequestAction }}
+    >
       <Router>
         <main className="App">
           <TopNav />
@@ -217,7 +217,7 @@ function App() {
           <Footer />
         </main>
       </Router>
-    
+    </AppContext.Provider>
   );
 }
 

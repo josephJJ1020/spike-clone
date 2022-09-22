@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 
 export default function Contact({ contact }) {
   const { sendFriendRequest } = useContext(AppContext);
-  const { userData } = useSelector((state) => state.userData);
+  const  userData  = useSelector((state) => state.userData);
   const [showSent, setShowSent] = useState(false);
 
   const clickFriendRequest = () => {

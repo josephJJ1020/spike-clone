@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import styles from "./Sidebar.module.css";
 
 export default function Contacts() {
-  const { onlineUsers } = useSelector((state) => state.onlineUsers);
+  const onlineUsers = useSelector((state) => state.onlineUsers);
 
   return (
     <div className={styles.Contacts}>

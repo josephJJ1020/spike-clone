@@ -12,7 +12,7 @@ import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 // need setFlashMsg
 export default function Login() {
-  const { global } = useSelector((state) => state.global);
+  const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   // const { logIn, setFlashMsg } = useContext(AppContext);

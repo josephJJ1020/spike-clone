@@ -11,7 +11,7 @@ import notifIcon from "../../images/notification.png";
 import Dropdown from "react-bootstrap/Dropdown";
 
 export default function TopNav() {
-  const { userData } = useSelector((state) => state.userData);
+  const  userData  = useSelector((state) => state.userData);
 
   const { friendRequestAction } = useContext(AppContext);
   const logOut = () => {
