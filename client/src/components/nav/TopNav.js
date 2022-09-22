@@ -1,6 +1,9 @@
 import React from "react";
 import { AppContext } from "../../context";
 import { useContext } from "react";
+
+import { useSelector } from "react-redux";
+
 import styles from "./Nav.module.css";
 import { Link } from "react-router-dom";
 
@@ -8,18 +11,25 @@ import notifIcon from "../../images/notification.png";
 import Dropdown from "react-bootstrap/Dropdown";
 
 export default function TopNav() {
-  const { userData, userId, logOut, friendRequestAction } =
-    useContext(AppContext);
+  const { userData } = useSelector((state) => state.userData);
+
+  const { friendRequestAction } = useContext(AppContext);
+  const logOut = () => {
+    sessionStorage.setItem("userId", null);
+    sessionStorage.setItem("userDetails", null);
+    window.location.reload();
+  };
+
   return (
     <nav className={styles.TopNav}>
       <div>
         <Link to="/">Spike Clone</Link>
       </div>
       <ul>
-        {userId ? (
+        {userData.userId ? (
           <>
-            <li>{userId}</li>
-            <li>{userData.firstName}</li>
+            <li>{userData.userId}</li>
+            <li>{userData.userData.firstName}</li>
             <li>
               <Dropdown className="shadow-none" align="end">
                 <Dropdown.Toggle
@@ -33,8 +43,8 @@ export default function TopNav() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {userData.notifications.length ? (
-                    userData.notifications.map((notif, index) => {
+                  {userData.userData.notifications.length ? (
+                    userData.userData.notifications.map((notif, index) => {
                       if (notif.type === "friend-request") {
                         return (
                           <Dropdown.Item key={index}>
@@ -48,7 +58,7 @@ export default function TopNav() {
                                       friendRequestAction({
                                         id: notif.id,
                                         type: "ACCEPT",
-                                        sender: userId,
+                                        sender: userData.userId,
                                         receiver: notif.from,
                                       })
                                     }
@@ -61,7 +71,7 @@ export default function TopNav() {
                                       friendRequestAction({
                                         id: notif.id,
                                         type: "REJECT",
-                                        sender: userId,
+                                        sender: userData.userId,
                                         receiver: notif.from,
                                       })
                                     }

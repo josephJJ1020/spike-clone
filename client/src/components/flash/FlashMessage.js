@@ -1,15 +1,19 @@
-import { useContext, useState } from "react";
-import { AppContext } from "../../context";
+import { useSelector, useDispatch } from "react-redux";
 import Alert from "react-bootstrap/Alert";
+import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 export default function FlashMessage() {
-  const { flashMsg, setFlashMsg } = useContext(AppContext);
-
+  const { global } = useSelector((state) => global.state);
+  const dispatch = useDispatch();
   return (
     <>
-      {flashMsg && (
-        <Alert variant="warning" onClose={() => setFlashMsg(null)} dismissible>
-          <p>{flashMsg.message}</p>
+      {global.flashMsg && (
+        <Alert
+          variant="warning"
+          onClose={() => dispatch(setFlashMsg(null))}
+          dismissible
+        >
+          <p>{global.flashMsg.message}</p>
         </Alert>
       )}
     </>

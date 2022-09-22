@@ -1,14 +1,18 @@
 import React from "react";
 import styles from "./Sidebar.module.css";
-import { useContext } from "react";
-import { AppContext } from "../../context";
+
+import { useDispatch } from "react-redux";
+import { setCurrentConvo } from "../../store/slices/globalsSlice";
 
 export default function Conversation({ convo }) {
-  const { setCurrentConvo } = useContext(AppContext);
+  const dispatch = useDispatch();
 
   return (
-    <div className={styles.Conversation} onClick={() => setCurrentConvo(convo)}>
-        {convo.participants.join(", ")}
-        </div>
+    <div
+      className={styles.Conversation}
+      onClick={() => dispatch(setCurrentConvo(convo))}
+    >
+      {convo.participants.join(", ")}
+    </div>
   );
 }

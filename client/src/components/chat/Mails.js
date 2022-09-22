@@ -1,9 +1,11 @@
 import React from "react";
 import { useContext } from "react";
 import { AppContext } from "../../context";
+import {useSelector} from 'react-redux'
 
 export default function Mails() {
-  const { messages, currentConvo } = useContext(AppContext);
+  const {global} = useSelector(state => state.global)
+  const { messages} = useContext(AppContext);
 
   return (
     <div className="Mails">
@@ -14,8 +16,8 @@ export default function Mails() {
             {`: ${message.message}`}
           </div>
         ))
-      ) : currentConvo.messages.length ? (
-        currentConvo.messages.map((message, index) => {
+      ) :global.currentConvo && global.currentConvo.messages.length ? (
+        global.currentConvo.messages.map((message, index) => {
           return (
             <div key={index}>
               <strong>{message.from}</strong>

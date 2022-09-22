@@ -1,20 +1,18 @@
-import React from "react";
+import { useInput } from "../hooks/useInput";
 import { useContext, useRef } from "react";
 import { AppContext } from "../../context";
+import { useSelector } from "react-redux";
 
 export default function MailForm() {
-  const { user, receiver, messages, setMessages, sendMessage } = useContext(AppContext);
-  const message = useRef("");
+  const { sendMessage } = useContext(AppContext);
+  const [message, setMessage] = useInput("");
 
   const submit = (event) => {
-    if (message.current.value.length) {
-      event.preventDefault();
-      // setMessages([
-      //   ...messages,
-      //   { author: sender, message: message.current.value },
-      // ]);
-      sendMessage({from: user, to: receiver, message: message.current.value})
-      message.current.value = "";
+    event.preventDefault();
+    
+    if (message.value.length) {
+      sendMessage(message.current.value); // receiver and sender will be defined in App.js; this only sends message.content
+      setMessage("");
     }
   };
 
@@ -24,7 +22,7 @@ export default function MailForm() {
         <input
           type={"text"}
           className="form-control shadow-none"
-          ref={message}
+          {...message}
           placeholder="Type message here"
         />
       </div>

@@ -1,17 +1,19 @@
 import Mails from "./Mails";
 import MailForm from "./MailForm";
 import ChatHeader from "./ChatHeader";
-import { AppContext } from "../../context";
-import { useContext } from "react";
+
+import { useSelector } from "react-redux";
 
 import styles from "./Chat.module.css";
-import cat from '../../images/cat.png'
+import cat from "../../images/cat.png";
 
 export default function Chat() {
-  const { receiver, currentConvo, onlineUsers } = useContext(AppContext);
+  const { global } = useSelector((state) => state.global);
+  const { onlineUsers } = useSelector((state) => state.onlineUsers);
+
   return (
     <div className="Chat">
-      {receiver || currentConvo ? (
+      {global.receiver || global.currentConvo ? (
         <>
           <ChatHeader />
           <Mails />
@@ -19,13 +21,13 @@ export default function Chat() {
         </>
       ) : (
         <section className={styles.noActiveConvo}>
-          {onlineUsers.length ? (
+          {onlineUsers.onlineUsers && onlineUsers.onlineUsers.length ? (
             <h1>Start chatting!</h1>
           ) : (
             <>
               <h1>Everyone's asleep it seems...</h1>
               <p>Come back later!</p>
-              <img src={cat} alt="No online users"/>
+              <img src={cat} alt="No online users" />
             </>
           )}
         </section>
