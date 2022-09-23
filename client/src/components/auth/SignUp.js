@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import styles from "./Auth.module.css";
 import { useInput } from "../hooks/useInput";
-import { AppContext } from "../../context";
-import { useContext } from "react";
 
 import { getAuth } from "../../controllers/getAuth";
 import { useSelector, useDispatch } from "react-redux";

@@ -2,7 +2,7 @@ import "./App.css";
 
 import io from "socket.io-client";
 import { AppContext } from "./context";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   BrowserRouter as Router,
