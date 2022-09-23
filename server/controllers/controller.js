@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const UserSchema = require("../schemas/User");
 const { v4: uuid } = require("uuid");
+const bcrypt = require("bcrypt");
 
 const User = mongoose.model("User", UserSchema);
 
@@ -15,26 +16,32 @@ const controller = {
       return new Error("Email already exists");
     }
 
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // create new user
     let newUser = new User({
       firstName: firstName,
       lastName: lastName,
       email: email,
-      password: password,
+      password: hashedPassword,
     });
 
     try {
       // save user and return user data
       await newUser.save();
       const user = await User.findOne({ email: email });
-      return {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        password: user.password, // encrypt password when returned
-        friends: user.friends,
-      };
+
+      if (user) {
+        return {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          password: user.password, // encrypt password when returned
+          friends: user.friends,
+        };
+      }
     } catch (err) {
       return new Error("Failed to create new user");
     }
@@ -44,9 +51,22 @@ const controller = {
   searchUser: async ({ id, email, password }) => {
     if (email && password) {
       try {
-        const user = await User.findOne({ email: email, password: password });
+        const user = await User.findOne({
+          email: email,
+        });
 
-        return user;
+        console.log(user);
+
+        if (user) {
+          const match = await comparePasswords(password, user.password);
+          console.log(match);
+
+          if (match) {
+            return user;
+          } else {
+            console.log(`passwords don't match`);
+          }
+        }
       } catch (err) {
         // console.log(err)
       }
@@ -148,11 +168,11 @@ const controller = {
         }
       } else if (type === "REJECT") {
         // delete friend request from user's notifications list
-        console.log(`sent id: ${id}`)
+        console.log(`sent id: ${id}`);
         const newNotifications = user.notifications.filter(
           (notif) => notif.id !== id
         );
-        console.log(`new notifications: ${newNotifications}`)
+        console.log(`new notifications: ${newNotifications}`);
         console.log("friend request rejected");
 
         // not setting proper notifications (rejected notification still pending, should be removed)
@@ -169,6 +189,10 @@ const controller = {
       }
     } catch (err) {}
   },
+};
+
+const comparePasswords = async (textPassword, hashedPassword) => {
+  return await bcrypt.compare(textPassword, hashedPassword);
 };
 
 module.exports = { controller, User };

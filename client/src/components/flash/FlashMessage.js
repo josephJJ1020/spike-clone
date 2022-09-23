@@ -3,7 +3,7 @@ import Alert from "react-bootstrap/Alert";
 import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 export default function FlashMessage() {
-  const { global } = useSelector((state) => global.state);
+  const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
   return (
     <>

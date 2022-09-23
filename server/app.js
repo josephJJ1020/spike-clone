@@ -1,5 +1,6 @@
 const bodyParser = require("body-parser");
 const cors = require("cors");
+
 const { controller, User } = require("./controllers/controller");
 const msgController = require("./controllers/msgController");
 
@@ -207,8 +208,8 @@ app.post("/login", async (req, res) => {
     try {
       const userData = await controller.searchUser({ email, password });
 
-      console.log(userData);
       if (userData) {
+        console.log(userData);
         return res.send(userData);
       } else {
         return res.status(409).send("Failed to find user!");

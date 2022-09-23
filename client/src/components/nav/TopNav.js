@@ -43,7 +43,7 @@ export default function TopNav() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {userData.userData.notifications.length ? (
+                  {userData.userData.notifications? (
                     userData.userData.notifications.map((notif, index) => {
                       if (notif.type === "friend-request") {
                         return (

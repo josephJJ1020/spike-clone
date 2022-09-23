@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 export default function SignUp() {
-  const { global } = useSelector((state) => state.global);
+  const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
   // const { signUp, setFlashMsg } = useContext(AppContext);
   const [firstName, setFirstName] = useInput("");
@@ -65,7 +65,7 @@ export default function SignUp() {
       dispatch(
         setFlashMsg({
           type: "error",
-          message: "Password must be more less than 8 characters ",
+          message: "Password must be more than 8 characters ",
         })
       );
       return;
