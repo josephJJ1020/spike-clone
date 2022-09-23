@@ -11,7 +11,7 @@ import notifIcon from "../../images/notification.png";
 import Dropdown from "react-bootstrap/Dropdown";
 
 export default function TopNav() {
-  const  userData  = useSelector((state) => state.userData);
+  const userData = useSelector((state) => state.userData);
 
   const { friendRequestAction } = useContext(AppContext);
   const logOut = () => {
@@ -28,7 +28,6 @@ export default function TopNav() {
       <ul>
         {userData.userId ? (
           <>
-            <li>{userData.userId}</li>
             <li>{userData.userData.firstName}</li>
             <li>
               <Dropdown className="shadow-none" align="end">
@@ -43,9 +42,9 @@ export default function TopNav() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {userData.userData.notifications? (
+                  {userData.userData.notifications ? (
                     userData.userData.notifications.map((notif, index) => {
-                      if (notif.type === "friend-request") {
+                      if (notif && notif.type === "friend-request") {
                         return (
                           <Dropdown.Item key={index}>
                             {notif.status === "PENDING" ? (
@@ -85,7 +84,10 @@ export default function TopNav() {
                             )}
                           </Dropdown.Item>
                         );
-                      } else if (notif.type === "friend-request-accepted") {
+                      } else if (
+                        notif &&
+                        notif.type === "friend-request-accepted"
+                      ) {
                         return (
                           <Dropdown.Item key={index}>
                             {notif.from} accepted your friend request

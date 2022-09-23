@@ -9,7 +9,7 @@ const Conversation = mongoose.model("Conversation", ConversationSchema);
 const msgController = {
   // get all conversations where the user is a participant
   getUserConversations: async (userId) => {
-    return await Conversation.find({ participants: userId });
+    return await Conversation.find({ "participants.id": userId });
   },
 
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
@@ -34,29 +34,28 @@ const msgController = {
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
       let convo = new Conversation({
-        participants: [message.to.id, user.id],
-        messsages: [
-          {
-            conversationId: null,
-            id: uuid().slice(0, 6),
-            from: user,
-            content: message.content,
-            dateCreated: Date.now(),
-          },
-        ],
+        participants: [message.to, user],
+        messsages: [],
       });
-      
+      convo.messages.push({
+        conversationId: null,
+        id: uuid().slice(0, 6),
+        from: user,
+        content: message.content,
+        dateCreated: Date.now(),
+      });
       await convo.save();
 
-      let newConvo = await Conversation.findById(convo._id);
-      return newConvo;
+      return convo;
     }
 
     let convo = await Conversation.findById(convoId);
 
     if (convo) {
       // check first if user id is in convo, then add message to convo
-      if (convo.participants.includes(user.id)) {
+      if (
+        convo.participants.some((participant) => participant.id === user.id)
+      ) {
         convo.messages.push({
           conversationId: convo._id,
           id: uuid().slice(0, 6),
@@ -66,7 +65,7 @@ const msgController = {
         });
 
         convo.save();
-        return await Conversation.findById(convo._id);
+        return convo;
       } else {
         return new Error("User is not in Conversation");
       }

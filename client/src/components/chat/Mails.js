@@ -1,26 +1,29 @@
 import React from "react";
-import { useContext } from "react";
-import { AppContext } from "../../context";
-import {useSelector} from 'react-redux'
+
+import { useSelector } from "react-redux";
 
 export default function Mails() {
-  const {global} = useSelector(state => state.global)
-  const { messages} = useContext(AppContext);
+  const userDataSlice = useSelector((state) => state.userData);
+  const global = useSelector((state) => state.global);
+  const conversationsSlice = useSelector((state) => state.conversations);
+
+  const currentConversation = global.currentConvoId
+    ? conversationsSlice.conversations.find(
+        (convo) => convo._id === global.currentConvoId
+      )
+    : null;
 
   return (
     <div className="Mails">
-      {messages || messages.length ? (
-        messages.map((message, i) => (
-          <div key={i}>
-            <strong>{message.from.id}</strong>
-            {`: ${message.message}`}
-          </div>
-        ))
-      ) :global.currentConvo && global.currentConvo.messages.length ? (
-        global.currentConvo.messages.map((message, index) => {
+      {currentConversation && currentConversation.messages.length ? (
+        currentConversation.messages.map((message, index) => {
           return (
             <div key={index}>
-              <strong>{message.from}</strong>
+              <strong>
+                {message.from.firstName === userDataSlice.userData.firstName
+                  ? "You"
+                  : message.from.firstName}
+              </strong>
               {`: ${message.content}`}
             </div>
           );

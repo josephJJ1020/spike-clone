@@ -31,16 +31,9 @@ const controller = {
       // save user and return user data
       await newUser.save();
       const user = await User.findOne({ email: email });
-
+      console.log(`new user _id: ${user._id}`);
       if (user) {
-        return {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          password: user.password, // encrypt password when returned
-          friends: user.friends,
-        };
+        return user;
       }
     } catch (err) {
       return new Error("Failed to create new user");
@@ -90,10 +83,15 @@ const controller = {
 
   // handles sent friend requests
   sendFriendRequest: async (requesterId, receiverId) => {
+    console.log(`requesterId: ${requesterId}`);
+    console.log(`receiverId: ${receiverId}`);
     if (requesterId && receiverId) {
       try {
         const sender = await User.findById(requesterId);
         const requestTo = await User.findById(receiverId);
+
+        console.log(`sender: ${sender}`);
+        console.log(`receiver: ${requestTo}`);
 
         const friendRequest = {
           id: uuid().slice(0, 6),

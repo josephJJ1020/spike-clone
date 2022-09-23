@@ -12,14 +12,10 @@ import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 // need setFlashMsg
 export default function Login() {
-<<<<<<< HEAD
-  const { logIn, setFlashMsg } = useContext(AppContext);
-=======
   const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   // const { logIn, setFlashMsg } = useContext(AppContext);
->>>>>>> use-redux
 
   const [emailProps, resetEmail] = useInput("");
   const [pwProps, resetpw] = useInput("");
@@ -51,24 +47,16 @@ export default function Login() {
       pw = pwProps.value.replace(/\s/g, "");
 
     if (!email || !email.length) {
-<<<<<<< HEAD
-      setFlashMsg({ type: "error", message: "Email must not be empty" });
-=======
       dispatch(
         setFlashMsg({ type: "error", message: "Email must not be empty" })
       );
->>>>>>> use-redux
       return;
     }
 
     if (!pw || !pw.length) {
-<<<<<<< HEAD
-      setFlashMsg({ type: "error", message: "Password must not be empty" });
-=======
       dispatch(
         setFlashMsg({ type: "error", message: "Password must not be empty" })
       );
->>>>>>> use-redux
       return;
     }
     logIn(email, pw);

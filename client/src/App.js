@@ -21,7 +21,10 @@ import FlashMessage from "./components/flash/FlashMessage";
 
 import { setUserData } from "./store/slices/userDataSlice";
 import { setOnlineUsers } from "./store/slices/onlineUsersSlice";
-import { setConversations } from "./store/slices/conversationsSlice";
+import {
+  replaceConvo,
+  setConversations,
+} from "./store/slices/conversationsSlice";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
@@ -74,11 +77,11 @@ function App() {
     });
 
     clientSocket.on("new-message", (data) => {
-      const newConversations = [...conversationsSlice.conversations, data];
-      dispatch(setConversations(newConversations));
+      dispatch(replaceConvo(data)); // replaces current convo with convo with new message
     });
 
     clientSocket.on("new-conversation", (newConversation) => {
+      console.log("received new conversation");
       dispatch(
         setConversations([...conversationsSlice.conversations, newConversation])
       ); // should be a conversation object with id, participants, and messages keys
@@ -150,22 +153,20 @@ function App() {
         }
       }
     });
-
-    if (userDataSlice.userData) {
-      console.log(userDataSlice.userData.notifications);
-    }
   }, [userDataSlice, dispatch, conversationsSlice]);
 
   const sendMessage = (message) => {
     clientSocket.emit("new-message", {
       user: {
         id: userDataSlice.userId,
+        firstName: userDataSlice.userData.firstName,
+        lastName: userDataSlice.userData.lastName,
       },
       message: {
-        to: globalSlice.receiver,
+        to: globalSlice.receiver, // {id, firstName, lastName}
         content: message,
       },
-      convoId: null,
+      convoId: globalSlice.currentConvoId,
     });
   };
 
@@ -181,14 +182,6 @@ function App() {
     clientSocket.emit("friend-request-action", data);
   };
 
-  console.log(userDataSlice);
-  /*<AppContext.Provider
-      value={{
-        sendMessage, // controller
-        sendFriendRequest, // controller
-        friendRequestAction, // controller
-      }}
-    > */
   return (
     <AppContext.Provider
       value={{ sendMessage, sendFriendRequest, friendRequestAction }}
@@ -212,6 +205,7 @@ function App() {
               path="/signup"
               element={userDataSlice.userId ? <Navigate to="/" /> : <SignUp />}
             />
+            <Route path="/spike-clone" element={<Navigate to="/" />}></Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>
           <Footer />

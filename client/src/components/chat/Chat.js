@@ -13,7 +13,7 @@ export default function Chat() {
 
   return (
     <div className="Chat">
-      {global.receiver || global.currentConvo ? (
+      {global.receiver || global.currentConvoId ? (
         <>
           <ChatHeader />
           <Mails />
