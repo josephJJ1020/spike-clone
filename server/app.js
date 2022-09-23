@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
         lastName: data.lastName,
         socketId: socket.id,
       });
-
+      // console.log(onlineUsers)
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
     }
@@ -77,15 +77,14 @@ io.on("connection", (socket) => {
     );
 
     onlineUsers.forEach((user) => {
-      if (newConversation.participants.includes(user.id)) {
-        if (Object.keys(io.sockets.sockets).includes(user.socketId)) {
-          io.sockets.connected[user.socketId].join(newConversation._id);
-        }
+      if (
+        newConversation.participants.some(
+          (participant) => participant.id === user.id
+        )
+      ) {
+        io.to(user.socketId).emit("new-message", newConversation);
       }
     });
-
-    // remember we are using convoId as socket.io room; send this new conversation to all participants via their sockets
-    io.sockets.in(newConversation._id).emit("new-message", newConversation);
 
     // participant will then add this new convo to conversations list in the frontend
   });
@@ -98,13 +97,13 @@ io.on("connection", (socket) => {
         data.requesterId,
         data.receiverId
       );
+      console.log("friend request sent! ");
 
       // send friend request event to receiver through their socket
       const onlineUser = onlineUsers.find(
         (user) => user.id === data.receiverId
       );
       if (onlineUser) {
-        console.log("friend request sent! ");
         io.to(onlineUser.socketId).emit("friend-request", friendRequest);
       }
     } catch (err) {
@@ -143,9 +142,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    // console.log(`removed user with socket id ${socket.id}`);
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
-    // console.log(`updated online users: ${onlineUsers}`);
   });
 });
 
