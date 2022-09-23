@@ -12,7 +12,7 @@ export default function Chat() {
   const onlineUsers = useSelector((state) => state.onlineUsers);
 
   return (
-    <div className="Chat">
+    <section className="Chat">
       {global.receiver || global.currentConvoId ? (
         <>
           <ChatHeader />
@@ -32,6 +32,6 @@ export default function Chat() {
           )}
         </section>
       )}
-    </div>
+    </section>
   );
 }

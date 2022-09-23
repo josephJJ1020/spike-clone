@@ -2,7 +2,7 @@ import "./App.css";
 
 import io from "socket.io-client";
 import { AppContext } from "./context";
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   BrowserRouter as Router,
@@ -18,6 +18,8 @@ import SignUp from "./components/auth/SignUp";
 import Footer from "./components/nav/Footer";
 import PageNotFound from "./components/PageNotFound";
 import FlashMessage from "./components/flash/FlashMessage";
+
+import { AddConversation } from "./components/sidebar/AddConversation";
 
 import { setUserData } from "./store/slices/userDataSlice";
 import { setOnlineUsers } from "./store/slices/onlineUsersSlice";
@@ -189,7 +191,10 @@ function App() {
       <Router>
         <main className="App">
           <TopNav />
+
+          <AddConversation />
           {globalSlice.flashMsg && <FlashMessage />}
+
           <Routes>
             <Route
               path="/"

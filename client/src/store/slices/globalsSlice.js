@@ -8,6 +8,7 @@ const globalSlice = createSlice({
     currentConvoId: null,
     currentConvo: null,
     flashMsg: null,
+    creatingConversation: false,
   },
   reducers: {
     setReceiver: (state, action) => {
@@ -20,9 +21,18 @@ const globalSlice = createSlice({
     setFlashMsg: (state, action) => {
       state.flashMsg = action.payload;
     },
+    setCreatingConversation: (state, action) => {
+      state.creatingConversation = action.payload;
+    },
   },
 });
 
-export const { setReceiver, setCurrentConvo, setFlashMsg, setCurrentConvoId } =
-  globalSlice.actions;
+export const {
+  setReceiver,
+  setCurrentConvo,
+  setFlashMsg,
+  setCurrentConvoId,
+  setCreatingConversation,
+} = globalSlice.actions;
+
 export default globalSlice.reducer;

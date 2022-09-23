@@ -8,7 +8,7 @@ export default function Contacts() {
   const onlineUsers = useSelector((state) => state.onlineUsers);
 
   return (
-    <div className={styles.Contacts}>
+    <section className={styles.Contacts}>
       <h2>Your Contacts</h2>
       <p>Online:</p>
       {onlineUsers.onlineUsers && onlineUsers.onlineUsers.length ? (
@@ -18,6 +18,6 @@ export default function Contacts() {
       ) : (
         <p>No users online</p>
       )}
-    </div>
+    </section>
   );
 }

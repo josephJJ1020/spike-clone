@@ -23,7 +23,9 @@ export default function TopNav() {
   return (
     <nav className={styles.TopNav}>
       <div>
-        <Link to="/">Spike Clone</Link>
+        <Link to="/">
+          <h3>Spike Clone</h3>
+        </Link>
       </div>
       <ul>
         {userData.userId ? (

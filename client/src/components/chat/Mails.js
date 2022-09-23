@@ -14,7 +14,7 @@ export default function Mails() {
     : null;
 
   return (
-    <div className="Mails">
+    <section className="Mails">
       {currentConversation && currentConversation.messages.length ? (
         currentConversation.messages.map((message, index) => {
           return (
@@ -31,6 +31,6 @@ export default function Mails() {
       ) : (
         <h1>No new messages</h1>
       )}
-    </div>
+    </section>
   );
 }
