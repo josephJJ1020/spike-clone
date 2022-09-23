@@ -9,13 +9,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 export default function SignUp() {
-<<<<<<< HEAD
-  const { signUp, setFlashMsg } = useContext(AppContext);
-=======
   const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
   // const { signUp, setFlashMsg } = useContext(AppContext);
->>>>>>> use-redux
   const [firstName, setFirstName] = useInput("");
   const [lastName, setLastName] = useInput("");
   const [email, setEmail] = useInput("");
@@ -51,21 +47,6 @@ export default function SignUp() {
       trimmedPw = pw.value.replace(/\s/g, "");
 
     if (!trimmedFirstName.length || !trimmedLastName.length) {
-<<<<<<< HEAD
-      setFlashMsg({ type: "error", message: "Name fields must not be empty" });
-      return;
-    } else if (!trimmedEmail.length) {
-      setFlashMsg({ type: "error", message: "Email must not be empty" });
-      return;
-    } else if (!trimmedPw || !trimmedPw.length) {
-      setFlashMsg({ type: "error", message: "Password must not be empty" });
-      return;
-    } else if (trimmedPw.length < 8) {
-      setFlashMsg({
-        type: "error",
-        message: "Password must be more less than 8 characters ",
-      });
-=======
       dispatch(
         setFlashMsg({ type: "error", message: "Name fields must not be empty" })
       );
@@ -87,7 +68,6 @@ export default function SignUp() {
           message: "Password must be more than 8 characters ",
         })
       );
->>>>>>> use-redux
       return;
     }
 

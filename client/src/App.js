@@ -169,57 +169,6 @@ function App() {
     });
   };
 
-<<<<<<< HEAD
-  const signUp = async (email, password, firstName, lastName) => {
-    const userData = await getAuth({
-      email: email,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
-      action: "SIGNUP",
-    });
-    if (flashMsg) return
-    if (userData.error) {
-      setFlashMsg({ type: "error", message: userData.error.message });
-      return;
-    } else if (userData) {
-      sessionStorage.setItem("userId", userData.userData.user._id);
-      sessionStorage.setItem(
-        "userDetails",
-        JSON.stringify(userData.userData.user)
-      );
-      window.location.reload();
-    }
-  };
-
-  const logIn = async (formEmail, formPassword) => {
-    const userData = await getAuth({
-      email: formEmail,
-      password: formPassword,
-      action: "LOGIN",
-    });
-    if (flashMsg) return
-    if (userData.error) {
-      setFlashMsg({ type: "error", message: userData.error.message });
-      return;
-    } else if (userData) {
-      sessionStorage.setItem("userId", userData.userData.user._id);
-      sessionStorage.setItem(
-        "userDetails",
-        JSON.stringify(userData.userData.user)
-      );
-      window.location.reload();
-    }
-  };
-
-  const logOut = () => {
-    sessionStorage.setItem("userId", null);
-    sessionStorage.setItem("userDetails", null);
-    window.location.reload();
-  };
-
-=======
->>>>>>> use-redux
   const sendFriendRequest = (requesterId, receiverId) => {
     clientSocket.emit("friend-request", {
       requesterId: requesterId,
