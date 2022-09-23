@@ -4,12 +4,44 @@ import { useInput } from "../hooks/useInput";
 import { AppContext } from "../../context";
 import { useContext } from "react";
 
+import { getAuth } from "../../controllers/getAuth";
+import { useSelector, useDispatch } from "react-redux";
+import { setFlashMsg } from "../../store/slices/globalsSlice";
+
 export default function SignUp() {
+<<<<<<< HEAD
   const { signUp, setFlashMsg } = useContext(AppContext);
+=======
+  const global = useSelector((state) => state.global);
+  const dispatch = useDispatch();
+  // const { signUp, setFlashMsg } = useContext(AppContext);
+>>>>>>> use-redux
   const [firstName, setFirstName] = useInput("");
   const [lastName, setLastName] = useInput("");
   const [email, setEmail] = useInput("");
   const [pw, setPw] = useInput("");
+
+  const signUp = async (email, password, firstName, lastName) => {
+    const userData = await getAuth({
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      action: "SIGNUP",
+    });
+    if (global.flashMsg) return;
+    if (userData.error) {
+      setFlashMsg({ type: "error", message: userData.error.message });
+      return;
+    } else if (userData) {
+      sessionStorage.setItem("userId", userData.userData.user._id);
+      sessionStorage.setItem(
+        "userDetails",
+        JSON.stringify(userData.userData.user)
+      );
+      window.location.reload();
+    }
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -19,6 +51,7 @@ export default function SignUp() {
       trimmedPw = pw.value.replace(/\s/g, "");
 
     if (!trimmedFirstName.length || !trimmedLastName.length) {
+<<<<<<< HEAD
       setFlashMsg({ type: "error", message: "Name fields must not be empty" });
       return;
     } else if (!trimmedEmail.length) {
@@ -32,6 +65,29 @@ export default function SignUp() {
         type: "error",
         message: "Password must be more less than 8 characters ",
       });
+=======
+      dispatch(
+        setFlashMsg({ type: "error", message: "Name fields must not be empty" })
+      );
+      return;
+    } else if (!trimmedEmail.length) {
+      dispatch(
+        setFlashMsg({ type: "error", message: "Email must not be empty" })
+      );
+      return;
+    } else if (!trimmedPw || !trimmedPw.length) {
+      dispatch(
+        setFlashMsg({ type: "error", message: "Password must not be empty" })
+      );
+      return;
+    } else if (trimmedPw.length < 8) {
+      dispatch(
+        setFlashMsg({
+          type: "error",
+          message: "Password must be more than 8 characters ",
+        })
+      );
+>>>>>>> use-redux
       return;
     }
 

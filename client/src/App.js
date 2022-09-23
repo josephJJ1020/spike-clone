@@ -3,13 +3,13 @@ import "./App.css";
 import io from "socket.io-client";
 import { AppContext } from "./context";
 import { useEffect, useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { getAuth } from "./controllers/getAuth";
 
 import TopNav from "./components/nav/TopNav";
 import HomePage from "./components/home/HomePage";
@@ -19,36 +19,21 @@ import Footer from "./components/nav/Footer";
 import PageNotFound from "./components/PageNotFound";
 import FlashMessage from "./components/flash/FlashMessage";
 
+import { setUserData } from "./store/slices/userDataSlice";
+import { setOnlineUsers } from "./store/slices/onlineUsersSlice";
+import { setConversations } from "./store/slices/conversationsSlice";
+
 // create socket
 const clientSocket = io("http://localhost:3001");
 
 function App() {
-  const mountedRef = useRef(true);
-
-  const [userId, setUserId] = useState(
-    sessionStorage.getItem("userId") === "null"
-      ? null
-      : sessionStorage.getItem("userId")
-  );
-  const [currUserData, setCurrUserData] = useState(
-    sessionStorage.getItem("userDetails") === "null"
-      ? null
-      : JSON.parse(sessionStorage.getItem("userDetails"))
-  );
+  // redux states
+  const userDataSlice = useSelector((state) => state.userData);
+  const conversationsSlice = useSelector((state) => state.conversations);
+  const globalSlice = useSelector((state) => state.global);
+  const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
-  const [user, setUser] = useState({ id: null, socketId: null });
-
-  const [onlineUsers, setOnlineUsers] = useState([]);
-
-  const [conversations, setConversations] = useState([]);
-
-  const [messages, setMessages] = useState([]); // delete later
-
-  const [receiver, setReceiver] = useState(null);
-  const [currentConvo, setCurrentConvo] = useState(null);
-
-  const [flashMsg, setFlashMsg] = useState(null);
 
   useEffect(() => {
     // set socket listeners
@@ -58,18 +43,21 @@ function App() {
     });
 
     clientSocket.on("onlineUsers", (data) => {
-      setOnlineUsers(data.filter((user) => user.id !== userId)); // should be an array of user objects with id and socketId
+      dispatch(
+        setOnlineUsers(data.filter((user) => user.id !== userDataSlice.userId))
+      ); // should be an array of user objects with id and socketId
     });
 
     clientSocket.on("disconnect", () => {});
 
-    if (currUserData) {
+    if (userDataSlice.userData) {
       clientSocket.emit("user-connection", {
-        id: userId,
-        firstName: currUserData.firstName,
-        lastName: currUserData.lastName,
+        id: userDataSlice.userId,
+        firstName: userDataSlice.userData.firstName,
+        lastName: userDataSlice.userData.lastName,
       });
-      clientSocket.emit("load-conversations", userId); // load conversations of user
+
+      clientSocket.emit("load-conversations", userDataSlice.userId); // load conversations of user
     }
 
     return () => {
@@ -82,30 +70,40 @@ function App() {
 
   useEffect(() => {
     clientSocket.on("load-conversations", (data) => {
-      setConversations(data); // should be an array
+      dispatch(setConversations(data)); // should be an array
     });
 
     clientSocket.on("new-message", (data) => {
-      const newConversations = [...conversations, data];
-      setConversations(newConversations);
+      const newConversations = [...conversationsSlice.conversations, data];
+      dispatch(setConversations(newConversations));
     });
 
     clientSocket.on("new-conversation", (newConversation) => {
-      setConversations([...conversations, newConversation]); // should be a conversation object with id, participants, and messages keys
+      dispatch(
+        setConversations([...conversationsSlice.conversations, newConversation])
+      ); // should be a conversation object with id, participants, and messages keys
     });
 
     clientSocket.on("friend-request", (data) => {
       console.log(data);
 
-      if (currUserData) {
-        const newNotifications = [...currUserData.notifications, data];
+      if (userDataSlice.userData) {
+        const newNotifications = [
+          ...userDataSlice.userData.notifications,
+          data,
+        ];
 
         sessionStorage.setItem(
           "userDetails",
-          JSON.stringify({ ...currUserData, notifications: newNotifications })
+          JSON.stringify({
+            ...userDataSlice.userData,
+            notifications: newNotifications,
+          })
         );
 
-        setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+        dispatch(
+          setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
+        );
       }
     });
 
@@ -115,18 +113,19 @@ function App() {
       // check if there is data sent
 
       if (data) {
-        if (currUserData) {
+        if (userDataSlice.userData) {
           // replace user notifications in session storage
           sessionStorage.setItem(
             "userDetails",
             JSON.stringify({
-              ...currUserData,
+              ...userDataSlice.userData,
               notifications: data.notifications,
               friends: data.friends,
             })
           );
-
-          setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+          dispatch(
+            setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
+          );
         }
       }
     });
@@ -136,39 +135,41 @@ function App() {
       // check if there is data sent
 
       if (data) {
-        if (currUserData) {
+        if (userDataSlice.userData) {
           // replace user notifications in session storage
           sessionStorage.setItem(
             "userDetails",
             JSON.stringify({
-              ...currUserData,
+              ...userDataSlice.userData,
               notifications: data.notifications,
             })
           );
-
-          setCurrUserData(JSON.parse(sessionStorage.getItem("userDetails")));
+          dispatch(
+            setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
+          );
         }
       }
     });
 
-    if (currUserData) {
-      console.log(currUserData.notifications);
+    if (userDataSlice.userData) {
+      console.log(userDataSlice.userData.notifications);
     }
-  }, [messages, conversations, connected, currUserData]);
+  }, [userDataSlice, dispatch, conversationsSlice]);
 
   const sendMessage = (message) => {
     clientSocket.emit("new-message", {
       user: {
-        id: userId,
+        id: userDataSlice.userId,
       },
       message: {
-        to: receiver,
+        to: globalSlice.receiver,
         content: message,
       },
       convoId: null,
     });
   };
 
+<<<<<<< HEAD
   const signUp = async (email, password, firstName, lastName) => {
     const userData = await getAuth({
       email: email,
@@ -217,6 +218,8 @@ function App() {
     window.location.reload();
   };
 
+=======
+>>>>>>> use-redux
   const sendFriendRequest = (requesterId, receiverId) => {
     clientSocket.emit("friend-request", {
       requesterId: requesterId,
@@ -229,45 +232,36 @@ function App() {
     clientSocket.emit("friend-request-action", data);
   };
 
+  console.log(userDataSlice);
+  /*<AppContext.Provider
+      value={{
+        sendMessage, // controller
+        sendFriendRequest, // controller
+        friendRequestAction, // controller
+      }}
+    > */
   return (
     <AppContext.Provider
-      value={{
-        userData: currUserData,
-        userId,
-        receiver,
-        messages,
-        conversations,
-        setMessages,
-        setReceiver,
-        onlineUsers,
-        sendMessage,
-        signUp,
-        logIn,
-        logOut,
-        flashMsg,
-        setFlashMsg,
-        currentConvo,
-        setCurrentConvo,
-        sendFriendRequest,
-        friendRequestAction,
-      }}
+      value={{ sendMessage, sendFriendRequest, friendRequestAction }}
     >
       <Router>
         <main className="App">
           <TopNav />
-          {flashMsg && <FlashMessage />}
+          {globalSlice.flashMsg && <FlashMessage />}
           <Routes>
             <Route
               path="/"
-              element={userId ? <HomePage /> : <Navigate to="/login" />}
+              element={
+                userDataSlice.userId ? <HomePage /> : <Navigate to="/login" />
+              }
             />
             <Route
               path="/login"
-              element={userId ? <Navigate to="/" /> : <Login />}
+              element={userDataSlice.userId ? <Navigate to="/" /> : <Login />}
             />
             <Route
               path="/signup"
-              element={userId ? <Navigate to="/" /> : <SignUp />}
+              element={userDataSlice.userId ? <Navigate to="/" /> : <SignUp />}
             />
             <Route path="*" element={<PageNotFound />} />
           </Routes>

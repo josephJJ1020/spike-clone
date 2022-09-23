@@ -7,12 +7,15 @@ import ContactAction from "./ContactAction";
 import styles from "./Sidebar.module.css";
 import addFriend from "../../images/add-friend.png";
 
+import { useSelector } from "react-redux";
+
 export default function Contact({ contact }) {
-  const { userId, sendFriendRequest, userData } = useContext(AppContext);
+  const { sendFriendRequest } = useContext(AppContext);
+  const  userData  = useSelector((state) => state.userData);
   const [showSent, setShowSent] = useState(false);
 
   const clickFriendRequest = () => {
-    sendFriendRequest(userId, contact.id);
+    sendFriendRequest(userData.userId, contact.id);
     setShowSent(true);
 
     setTimeout(() => {
@@ -26,7 +29,8 @@ export default function Contact({ contact }) {
         <div className={styles.onlineCircle}></div>
         {contact.firstName}
       </div>
-      {userData.friends && !userData.friends.includes(contact.id) ? (
+      {userData.userData.friends &&
+      !userData.userData.friends.includes(contact.id) ? (
         <>
           <div className={styles.ContactActions}>
             <ContactAction source={addFriend} callback={clickFriendRequest} />

@@ -1,18 +1,18 @@
-import React from "react";
 import Contact from "./Contact";
-import { useContext } from "react";
-import { AppContext } from "../../context";
-import styles from './Sidebar.module.css'
+
+import { useSelector } from "react-redux";
+
+import styles from "./Sidebar.module.css";
 
 export default function Contacts() {
-  const { onlineUsers } = useContext(AppContext);
-  
+  const onlineUsers = useSelector((state) => state.onlineUsers);
+
   return (
     <div className={styles.Contacts}>
       <h2>Your Contacts</h2>
       <p>Online:</p>
-      {onlineUsers.length ? (
-        onlineUsers.map((contact, index) => (
+      {onlineUsers.onlineUsers && onlineUsers.onlineUsers.length ? (
+        onlineUsers.onlineUsers.map((contact, index) => (
           <Contact key={index} contact={contact} />
         ))
       ) : (
