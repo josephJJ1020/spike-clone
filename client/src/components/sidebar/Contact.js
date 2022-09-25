@@ -8,7 +8,11 @@ import styles from "./Sidebar.module.css";
 import addFriend from "../../images/add-friend.png";
 
 import { useSelector, useDispatch } from "react-redux";
-import { setCurrentConvo, setCurrentConvoId, setReceiver } from "../../store/slices/globalsSlice";
+import {
+  setCurrentConvo,
+  setCurrentConvoId,
+  setReceiver,
+} from "../../store/slices/globalsSlice";
 
 export default function Contact({ contact }) {
   const { sendFriendRequest } = useContext(AppContext);
@@ -46,7 +50,7 @@ export default function Contact({ contact }) {
                 // if true, set current conversation
                 if (
                   conversation.participants.some(
-                    (user) => user.id === contact.id
+                    (user) => user.email === contact.email
                   ) &&
                   conversation.participants.length < 3
                 ) {
@@ -59,7 +63,7 @@ export default function Contact({ contact }) {
                 dispatch(
                   setReceiver({
                     id: contact.id,
-                    email: contact.email
+                    email: contact.email,
                   })
                 );
                 dispatch(setCurrentConvoId(null));

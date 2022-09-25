@@ -4,31 +4,58 @@ import Modal from "react-bootstrap/Modal";
 import Badge from "react-bootstrap/Badge";
 import CloseButtton from "react-bootstrap/CloseButton";
 
-import { useState } from "react";
+import emailValidator from "email-validator";
+
+import { useEffect, useState, useContext } from "react";
 import { useInput } from "../hooks/useInput";
 import { useSelector, useDispatch } from "react-redux";
+
 import { setCreatingConversation } from "../../store/slices/globalsSlice";
+import { AppContext } from "../../context";
 
 export const AddConversation = () => {
+  const userDataSlice = useSelector((state) => state.userData);
   const globalSlice = useSelector((state) => state.global);
   const dispatch = useDispatch();
+
+  const { createNewConversation } = useContext(AppContext);
 
   const [participant, setParticipant] = useInput("");
   const [participants, setParticipants] = useState([]);
 
+  const [warning, setWarning] = useState(null);
+
   const addParticipant = () => {
     if (participant.value.length) {
-      setParticipants([...participants, participant.value]);
+      if (!emailValidator.validate(participant.value)) {
+        setWarning("Must enter email");
+        return;
+      }
+      setParticipants([...participants, { email: participant.value }]);
       setParticipant("");
     }
   };
 
-  const removeParticipant = (name) => {
+  const removeParticipant = (email) => {
     console.log("clicked!");
-    setParticipants(participants.filter((user) => user !== name));
+    setParticipants(participants.filter((user) => user.email !== email));
+  };
+
+  const createConversation = () => {
+    createNewConversation([
+      ...participants,
+      { email: userDataSlice.userData.email },
+    ]);
   };
 
   const show = globalSlice.creatingConversation;
+
+  useEffect(() => {
+    setTimeout(() => {
+      setWarning(null);
+    }, 3000);
+  }, [warning]);
+
   return (
     <>
       <Modal
@@ -48,13 +75,17 @@ export const AddConversation = () => {
                 autoFocus
               />
             </Form.Group>
+            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Label>Subject (optional)</Form.Label>
+              <Form.Control type="text" placeholder="Subject" autoFocus />
+            </Form.Group>
             <div>
               {participants &&
                 participants.map((participant, index) => (
                   <Badge key={index}>
-                    {participant}
+                    {participant.email}
                     <CloseButtton
-                      onClick={() => removeParticipant(participant)}
+                      onClick={() => removeParticipant(participant.email)}
                     />
                   </Badge>
                 ))}
@@ -64,6 +95,7 @@ export const AddConversation = () => {
               controlId="exampleForm.ControlTextarea1"
             >
               <Form.Label>Participants</Form.Label>
+              {warning && <p className="text-warning">{warning}</p>}
               <Form.Control as="input" rows={3} {...participant} />
               <Button onClick={addParticipant}>Add participant</Button>
             </Form.Group>
@@ -78,7 +110,10 @@ export const AddConversation = () => {
           </Button>
           <Button
             variant="primary"
-            onClick={() => dispatch(setCreatingConversation(false))}
+            onClick={() => {
+              createConversation();
+              dispatch(setCreatingConversation(false));
+            }}
           >
             Create
           </Button>

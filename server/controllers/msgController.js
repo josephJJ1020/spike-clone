@@ -8,8 +8,8 @@ const Conversation = mongoose.model("Conversation", ConversationSchema);
 
 const msgController = {
   // get all conversations where the user is a participant
-  getUserConversations: async (userId) => {
-    return await Conversation.find({ "participants.id": userId });
+  getUserConversations: async (email) => {
+    return await Conversation.find({ 'participants.email': email });
   },
 
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
@@ -17,18 +17,15 @@ const msgController = {
     const newConvo = new Conversation({ participants: users });
     await newConvo.save();
 
-    users.forEach(async (userId) => {
-      let user = await User.findById(userId);
-      user.conversations.push(newConvo._id);
-      user.save();
+    users.forEach(async (email) => {
+      await User.updateOne(
+        { email: email },
+        { $push: { conversations: newConvo._id } }
+      );
     });
 
     return Conversation.findById(newConvo._id);
   },
-
-  // add message to conversation; takes in user {id}, message {conversationId, id (created with uuid), to, from, content}
-  // and conversation id
-  // message.to format: {id}
 
   addMessage: async (user, message, convoId) => {
     // check if conversation id is specified; if not, make new one (might delete this one later)
@@ -37,13 +34,26 @@ const msgController = {
         participants: [message.to, user],
         messsages: [],
       });
-      convo.messages.push({
-        conversationId: null,
-        id: uuid().slice(0, 6),
-        from: user,
-        content: message.content,
-        dateCreated: Date.now(),
+
+      await Conversation.findByIdAndUpdate(convo._id, {
+        $push: {
+          messages: {
+            conversationId: null,
+            id: uuid().slice(0, 6),
+            from: user,
+            content: message.content,
+            dateCreated: Date.now(),
+          },
+        },
       });
+
+      // convo.messages.push({
+      //   conversationId: null,
+      //   id: uuid().slice(0, 6),
+      //   from: user,
+      //   content: message.content,
+      //   dateCreated: Date.now(),
+      // });
       await convo.save();
 
       return convo;
@@ -54,7 +64,7 @@ const msgController = {
     if (convo) {
       // check first if user id is in convo, then add message to convo
       if (
-        convo.participants.some((participant) => participant.id === user.id)
+        convo.participants.some((participant) => participant.email === user.email)
       ) {
         convo.messages.push({
           conversationId: convo._id,

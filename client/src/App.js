@@ -63,7 +63,7 @@ function App() {
         email: userDataSlice.userData.email,
       });
 
-      clientSocket.emit("load-conversations", userDataSlice.userId); // load conversations of user
+      clientSocket.emit("load-conversations", userDataSlice.userData.email); // load conversations of user
     }
 
     return () => {
@@ -87,7 +87,7 @@ function App() {
       console.log("received new conversation");
       dispatch(
         setConversations([...conversationsSlice.conversations, newConversation])
-      ); // should be a conversation object with id, participants, and messages keys
+      ); // should be a conversation object with id, participants, and messages fields
     });
 
     clientSocket.on("friend-request", (data) => {
@@ -165,7 +165,7 @@ function App() {
         email: userDataSlice.userData.email,
       },
       message: {
-        to: globalSlice.receiver, // {id, firstName, lastName}
+        to: globalSlice.receiver, // {id, email}
         content: message,
       },
       convoId: globalSlice.currentConvoId,
@@ -184,9 +184,13 @@ function App() {
     clientSocket.emit("friend-request-action", data);
   };
 
+  const createNewConversation = (participants) => {
+    clientSocket.emit("create-conversation", participants)
+  } 
+
   return (
     <AppContext.Provider
-      value={{ sendMessage, sendFriendRequest, friendRequestAction }}
+      value={{ sendMessage, sendFriendRequest, friendRequestAction, createNewConversation }}
     >
       <Router>
         <main className="App">

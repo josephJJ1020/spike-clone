@@ -51,8 +51,8 @@ io.on("connection", (socket) => {
   });
 
   // fetch user conversations and send it to newly connected user; takes in user id; maybe should execute this code on user connection
-  socket.on("load-conversations", async (userId) => {
-    const conversations = await msgController.getUserConversations(userId);
+  socket.on("load-conversations", async (email) => {
+    const conversations = await msgController.getUserConversations(email);
 
     conversations.forEach((conversation) => {
       socket.join(conversation._id); // add user to each conversation channel (uses conversation id as socket.io room id)
@@ -63,8 +63,21 @@ io.on("connection", (socket) => {
 
   // create new conversation (1 on 1 or group chat)
   socket.on("create-conversation", async (users) => {
-    const newConversation = msgController.makeConversation(users);
-    // TODO: join all participants in the conversation to socket.io room (socket.io room = conversation._id)
+    try {
+      const newConversation = await msgController.makeConversation(users);
+
+      onlineUsers.forEach((user) => {
+        if (
+          newConversation.participants.some(
+            (participant) => participant.email === user.email
+          )
+        ) {
+          io.to(user.socketId).emit("new-conversation", newConversation);
+        }
+      });
+    } catch (err) {
+      console.log(err.message);
+    }
 
     // participants will add this new conversation to their conversations list in the frontend
   });
@@ -80,7 +93,7 @@ io.on("connection", (socket) => {
     onlineUsers.forEach((user) => {
       if (
         newConversation.participants.some(
-          (participant) => participant.id === user.id
+          (participant) => participant.email === user.email 
         )
       ) {
         io.to(user.socketId).emit("new-message", newConversation);
