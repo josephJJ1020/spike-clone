@@ -39,8 +39,9 @@ io.on("connection", (socket) => {
     if (data.id) {
       onlineUsers.push({
         id: data.id,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        // firstName: data.firstName,
+        // lastName: data.lastName,
+        email: data.email,
         socketId: socket.id,
       });
       // console.log(onlineUsers)

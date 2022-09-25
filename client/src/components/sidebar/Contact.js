@@ -59,8 +59,7 @@ export default function Contact({ contact }) {
                 dispatch(
                   setReceiver({
                     id: contact.id,
-                    firstName: contact.firstName,
-                    lastName: contact.lastName,
+                    email: contact.email
                   })
                 );
                 dispatch(setCurrentConvoId(null));
@@ -71,7 +70,7 @@ export default function Contact({ contact }) {
     >
       <div className={styles.ContactDetails}>
         <div className={styles.onlineCircle}></div>
-        {contact.firstName}
+        {contact.email}
       </div>
       {!isFriend(contact.id) ? (
         <>

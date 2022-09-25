@@ -20,9 +20,9 @@ export default function Mails() {
           return (
             <div key={index}>
               <strong>
-                {message.from.firstName === userDataSlice.userData.firstName
+                {message.from.email === userDataSlice.userData.email
                   ? "You"
-                  : message.from.firstName}
+                  : message.from.email}
               </strong>
               {`: ${message.content}`}
             </div>

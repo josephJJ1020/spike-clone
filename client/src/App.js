@@ -58,8 +58,9 @@ function App() {
     if (userDataSlice.userData) {
       clientSocket.emit("user-connection", {
         id: userDataSlice.userId,
-        firstName: userDataSlice.userData.firstName,
-        lastName: userDataSlice.userData.lastName,
+        // firstName: userDataSlice.userData.firstName,
+        // lastName: userDataSlice.userData.lastName,
+        email: userDataSlice.userData.email,
       });
 
       clientSocket.emit("load-conversations", userDataSlice.userId); // load conversations of user
@@ -161,8 +162,7 @@ function App() {
     clientSocket.emit("new-message", {
       user: {
         id: userDataSlice.userId,
-        firstName: userDataSlice.userData.firstName,
-        lastName: userDataSlice.userData.lastName,
+        email: userDataSlice.userData.email,
       },
       message: {
         to: globalSlice.receiver, // {id, firstName, lastName}

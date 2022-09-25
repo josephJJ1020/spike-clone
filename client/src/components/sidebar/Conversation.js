@@ -22,9 +22,9 @@ export default function Conversation({ convo }) {
       {convo.participants &&
         convo.participants
           .map((participant) =>
-            userDataSlice.userData.firstName === participant.firstName
+            userDataSlice.userData.email === participant.email
               ? "You"
-              : participant.firstName
+              : participant.email
           )
           .join(", ")}
     </div>

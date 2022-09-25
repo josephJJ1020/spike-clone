@@ -18,7 +18,7 @@ export default function ChatHeader() {
         <>
           <div className="Subject">
             <h1>
-              {global.receiver ? global.receiver.firstName : `Select receiver`}
+              {global.receiver ? global.receiver.email : `Select receiver`}
             </h1>
           </div>
         </>
@@ -27,7 +27,7 @@ export default function ChatHeader() {
           <div className={styles.Subject}>
             <p>
               {currentConversation.participants
-                .map((participant) => participant.firstName)
+                .map((participant) => participant.email)
                 .join(", ")}
             </p>
           </div>
