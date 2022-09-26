@@ -3,14 +3,9 @@ import { useSelector } from "react-redux";
 
 import styles from "./Chat.module.css";
 
-export default function ChatHeader() {
+export default function ChatHeader({ participants }) {
   const global = useSelector((state) => state.global);
-  const conversationsSlice = useSelector((state) => state.conversations);
-  const currentConversation = global.currentConvoId
-    ? conversationsSlice.conversations.find(
-        (convo) => convo._id === global.currentConvoId
-      )
-    : null;
+  const { userData } = useSelector((state) => state.userData);
 
   return (
     <div className="ChatHeader">
@@ -22,12 +17,16 @@ export default function ChatHeader() {
             </h1>
           </div>
         </>
-      ) : currentConversation ? (
+      ) : participants ? (
         <>
           <div className={styles.Subject}>
             <p>
-              {currentConversation.participants
-                .map((participant) => participant.email)
+              {participants
+                .map((participant) =>
+                  participant.email !== userData.email
+                    ? participant.email
+                    : null
+                )
                 .join(", ")}
             </p>
           </div>

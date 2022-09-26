@@ -2,16 +2,8 @@ import React from "react";
 
 import { useSelector } from "react-redux";
 
-export default function Mails() {
+export default function Mails({currentConversation}) {
   const userDataSlice = useSelector((state) => state.userData);
-  const global = useSelector((state) => state.global);
-  const conversationsSlice = useSelector((state) => state.conversations);
-
-  const currentConversation = global.currentConvoId
-    ? conversationsSlice.conversations.find(
-        (convo) => convo._id === global.currentConvoId
-      )
-    : null;
 
   return (
     <section className="Mails">

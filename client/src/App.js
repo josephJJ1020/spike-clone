@@ -19,6 +19,15 @@ import Footer from "./components/nav/Footer";
 import PageNotFound from "./components/PageNotFound";
 import FlashMessage from "./components/flash/FlashMessage";
 
+import {
+  createAnswer,
+  acceptAnswer,
+  addIceCandidate,
+  makeOffer,
+  createPeerConnection,
+  setLocalVideo,
+} from "./controllers/webrtc";
+
 import { AddConversation } from "./components/sidebar/AddConversation";
 
 import { setUserData } from "./store/slices/userDataSlice";
@@ -27,6 +36,7 @@ import {
   replaceConvo,
   setConversations,
 } from "./store/slices/conversationsSlice";
+import { setLocalStream } from "./store/slices/peerConnectionSlice";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
@@ -36,6 +46,7 @@ function App() {
   const userDataSlice = useSelector((state) => state.userData);
   const conversationsSlice = useSelector((state) => state.conversations);
   const globalSlice = useSelector((state) => state.global);
+  const peerConnectionSlice = useSelector((state) => state.pee);
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -156,7 +167,29 @@ function App() {
         }
       }
     });
-  }, [userDataSlice, dispatch, conversationsSlice]);
+
+    /* --------------------- WebRTC --------------------- */
+    clientSocket.on("offer", async (data) => {
+      // make accept reject screen visible when we receive an offer
+      // only create answer if we accept the call
+      await createAnswer(data, peerConnectionSlice.peerConnection);
+    });
+
+    clientSocket.on("reject-offer", (data) => {
+      // popup call rejected screen
+      // data.sender rejected your call; then use setTimeout to clear the call screen
+    });
+
+    clientSocket.on("answer", async (data) => {
+      await acceptAnswer(data, peerConnectionSlice.peerConnection);
+    });
+
+    clientSocket.on("add-ice-candidate", async (data) => {
+      if (data.iceCandidate) {
+        await addIceCandidate(data, peerConnectionSlice.peerConnectionSlice);
+      }
+    });
+  }, [userDataSlice, dispatch, conversationsSlice, peerConnectionSlice]);
 
   const sendMessage = (message) => {
     clientSocket.emit("new-message", {
@@ -185,12 +218,27 @@ function App() {
   };
 
   const createNewConversation = (participants) => {
-    clientSocket.emit("create-conversation", participants)
-  } 
+    clientSocket.emit("create-conversation", participants);
+  };
+
+  const videoCall = async (receiver) => {
+    createPeerConnection(clientSocket, userDataSlice.userData.email, receiver, 'VIDEO');
+  };
+
+  const voiceCall = async (receiver) => {
+    createPeerConnection(clientSocket, userDataSlice.userData.email, receiver, 'CALL');
+  }
 
   return (
     <AppContext.Provider
-      value={{ sendMessage, sendFriendRequest, friendRequestAction, createNewConversation }}
+      value={{
+        sendMessage,
+        sendFriendRequest,
+        friendRequestAction,
+        createNewConversation,
+        videoCall,
+        voiceCall
+      }}
     >
       <Router>
         <main className="App">

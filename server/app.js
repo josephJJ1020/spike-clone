@@ -155,6 +155,35 @@ io.on("connection", (socket) => {
     }
   });
 
+  /* --------------------- WebRTC --------------------- */
+  socket.on('offer', data => {
+    // if receiver is online, send offer to receiver's socket; else send callee-offline event
+    console.log('received offer')
+    let receiverOnline;
+
+    onlineUsers.forEach(user => {
+      if (user.email === data.receiver) {
+        io.to(user.socketId).emit('offer', data)
+        receiverOnline = true
+      }
+    })
+
+    // if receiver is not online, send callee-offline event to caller
+    if (!receiverOnline) {
+      io.to(onlineUsers.find(user => user.email === data.sender).socketId).emit('callee-offline', data.receiver)
+    }
+  })
+
+  socket.on('answer', data => {
+    // answering a call means caller is already online
+    server.to(onlineUsers.find(user => user.email === data.receiver).socketId).emit('answer', data)
+  })
+
+  socket.on('add-ice-candidate', data => {
+    server.to(onlineUsers.find(user => user.email === data.receiver).socketId).emit('add-ice-candidate', data)
+  })
+
+  /* --------------------- disconnect --------------------- */
   socket.on("disconnect", () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
   });
