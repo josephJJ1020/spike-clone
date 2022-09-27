@@ -12,12 +12,10 @@ export default function ChatHeader({ participants }) {
       {global.receiver ? (
         <>
           <div className="Subject">
-            <h1>
-              {global.receiver ? global.receiver.email : `Select receiver`}
-            </h1>
+            <p>{global.receiver ? global.receiver.email : `Select receiver`}</p>
           </div>
         </>
-      ) : participants ? (
+      ) : global.currentConvoId ? (
         <>
           <div className={styles.Subject}>
             <p>

@@ -53,20 +53,25 @@ export default function Contact({ contact }) {
                   conversation.participants.length < 3
                 ) {
                   found = true;
-                  return dispatch(setCurrentConvoId(conversation._id));
+                  console.log('found')
+                  dispatch(setCurrentConvoId(conversation._id));
+                  dispatch(setReceiver(null))
                 }
               });
 
               if (!found) {
+                console.log('no convo found')
+                dispatch(setCurrentConvoId(null));
                 dispatch(
                   setReceiver({
                     id: contact.id,
                     email: contact.email,
                   })
                 );
-                dispatch(setCurrentConvoId(null));
               }
+              
             }
+
           : () => console.log("clicked! not friend")
       }
     >

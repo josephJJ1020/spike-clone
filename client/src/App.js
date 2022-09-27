@@ -62,7 +62,7 @@ function App() {
   const userDataSlice = useSelector((state) => state.userData);
   const conversationsSlice = useSelector((state) => state.conversations);
   const globalSlice = useSelector((state) => state.global);
-  const { errMsg, offer, onCall } = useSelector((state) => state.callState);
+  const { errMsg, offer, onCall, callType } = useSelector((state) => state.callState);
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -232,7 +232,7 @@ function App() {
     clientSocket.on("call-ended", (data) => {
       dispatch(setErrMsg(`${data.sender} has ended the call.`));
       dispatch(setOnCall(false));
-      handleHangUp();
+      handleHangUp(data.callType);
       dispatch(setCallType(null));
     });
 
@@ -316,7 +316,7 @@ function App() {
 
   const disconnectFromCall = async (receiver) => {
     // send disconnect message to callee
-    hangUp(clientSocket, userDataSlice.userData.email, receiver);
+    hangUp(clientSocket, userDataSlice.userData.email, receiver, callType);
 
     dispatch(setErrMsg("Call has been disconnected"));
     dispatch(setOnCall(false));

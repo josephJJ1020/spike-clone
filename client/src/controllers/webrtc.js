@@ -161,38 +161,43 @@ export const hideCam = () => {
 };
 
 // invoke when user presses hang up button
-export const hangUp = (socket, sender, receiver) => {
+export const hangUp = (socket, sender, receiver, callType) => {
   // close peer connection
   peerConnection.close();
   peerConnection = null;
 
   // reset local stream (enable mic and video)
   localStream.getAudioTracks()[0].enabled = true;
-  localStream.getVideoTracks()[0].enabled = true;
+  if (callType === "VIDEO") {
+    localStream.getVideoTracks()[0].enabled = true;
+  }
 
-  localStream = null
-  remoteStream = null
+  localStream = null;
+  remoteStream = null;
 
-  sendEndCallMessage(socket, sender, receiver);
+  sendEndCallMessage(socket, sender, receiver, callType);
 };
 
 // hang up helper
-export const sendEndCallMessage = (socket, sender, receiver) => {
+export const sendEndCallMessage = (socket, sender, receiver, callType) => {
   socket.emit("call-ended", {
     sender: sender,
     receiver: receiver,
+    callType: callType,
   });
 };
 
-export const handleHangUp = () => {
+export const handleHangUp = (callType) => {
   peerConnection.close();
   peerConnection = null;
 
   // reset local stream (enable mic and video)
   localStream.getAudioTracks()[0].enabled = true;
-  localStream.getVideoTracks()[0].enabled = true;
-  
-  localStream = null
-  remoteStream = null
+  if (callType === "VIDEO") {
+    localStream.getVideoTracks()[0].enabled = true;
+  }
+
+  localStream = null;
+  remoteStream = null;
   // do something when remote user disconnects
 };

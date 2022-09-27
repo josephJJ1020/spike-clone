@@ -9,7 +9,7 @@ export default function Contacts() {
 
   return (
     <section className={styles.Contacts}>
-      <h2>Your Contacts</h2>
+      <h2>Users</h2>
       <p>Online:</p>
       {onlineUsers.onlineUsers && onlineUsers.onlineUsers.length ? (
         onlineUsers.onlineUsers.map((contact, index) => (

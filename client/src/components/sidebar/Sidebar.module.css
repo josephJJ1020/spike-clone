@@ -6,14 +6,27 @@
   margin: 20px 0;
 }
 
+.Contacts,
+.Conversations {
+  max-height: 50%;
+  overflow-y: auto;
+  overflow-x: visible;
+  text-align: left;
+  padding-left: 20px;
+}
+
 .Conversation {
-  border-top: 1px solid white;
-  border-bottom: 1px solid white;
   width: 100%;
   height: 50px;
   display: flex;
   align-items: center;
   padding: 0 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.Conversation:hover {
+  background-color: rgb(81, 128, 129);
 }
 
 .Conversations h2 {
@@ -59,7 +72,7 @@
   white-space: nowrap;
   transform-origin: bottom left;
   height: 100%;
-  animation: fadeIn .3s ease alternate;
+  animation: fadeIn 0.3s ease alternate;
 }
 
 @keyframes fadeIn {
