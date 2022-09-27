@@ -34,12 +34,10 @@ export const createPeerConnection = async (
   peerConnection.onconnectionstatechange = (event) => {
     if (peerConnection.connectionState === "connected") {
       console.log("successfully connected with other peer");
+    } else if (peerConnection.connectionState === "disconnected") {
+      // remove remote video/reset callee
     }
   };
-
-  // // receiving tracks from remote stream
-  // const newRemoteStream = new MediaStream();
-  // remoteStream = newRemoteStream;
 
   peerConnection.ontrack = (event) => {
     const [newRemoteStream] = event.streams;
@@ -160,4 +158,41 @@ export const muteStream = () => {
 export const hideCam = () => {
   const enabled = localStream.getVideoTracks()[0].enabled;
   localStream.getVideoTracks()[0].enabled = !enabled;
+};
+
+// invoke when user presses hang up button
+export const hangUp = (socket, sender, receiver) => {
+  // close peer connection
+  peerConnection.close();
+  peerConnection = null;
+
+  // reset local stream (enable mic and video)
+  localStream.getAudioTracks()[0].enabled = true;
+  localStream.getVideoTracks()[0].enabled = true;
+
+  localStream = null
+  remoteStream = null
+
+  sendEndCallMessage(socket, sender, receiver);
+};
+
+// hang up helper
+export const sendEndCallMessage = (socket, sender, receiver) => {
+  socket.emit("call-ended", {
+    sender: sender,
+    receiver: receiver,
+  });
+};
+
+export const handleHangUp = () => {
+  peerConnection.close();
+  peerConnection = null;
+
+  // reset local stream (enable mic and video)
+  localStream.getAudioTracks()[0].enabled = true;
+  localStream.getVideoTracks()[0].enabled = true;
+  
+  localStream = null
+  remoteStream = null
+  // do something when remote user disconnects
 };

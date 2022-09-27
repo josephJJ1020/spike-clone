@@ -8,8 +8,10 @@ import {
 } from "../../store/slices/globalsSlice";
 
 export default function Conversation({ convo }) {
-  const userDataSlice = useSelector((state) => state.userData);
+  const {userData} = useSelector((state) => state.userData);
   const dispatch = useDispatch();
+
+  const participants = convo.participants.filter(user => user.email !== userData.email)
 
   return (
     <div
@@ -19,14 +21,8 @@ export default function Conversation({ convo }) {
         dispatch(setReceiver(null));
       }}
     >
-      {convo.participants &&
-        convo.participants
-          .map((participant) =>
-            userDataSlice.userData.email === participant.email
-              ? "You"
-              : participant.email
-          )
-          .join(", ")}
+      {participants &&
+        participants.map(participant => participant.email).join(', ')}
     </div>
   );
 }

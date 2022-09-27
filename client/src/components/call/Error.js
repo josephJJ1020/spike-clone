@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
 export const Error = () => {
-  const { errMsg } = useSelector((state) => state.callState);
+  const { errMsg, callType } = useSelector((state) => state.callState);
   const dispatch = useDispatch();
   const show = errMsg !== null;
 
@@ -25,7 +25,7 @@ export const Error = () => {
       show={show}
     >
       <Modal.Header>
-        <Modal.Title id="contained-modal-title-vcenter">Video Call</Modal.Title>
+        <Modal.Title id="contained-modal-title-vcenter">{callType} Call</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <h4>Call cancelled</h4>

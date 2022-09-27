@@ -10,6 +10,7 @@ import cat from "../../images/cat.png";
 export default function Chat() {
   const global = useSelector((state) => state.global);
   const onlineUsers = useSelector((state) => state.onlineUsers);
+  const { userData } = useSelector((state) => state.userData);
   const { conversations } = useSelector((state) => state.conversations);
 
   const currentConversation = global.currentConvoId
@@ -20,9 +21,36 @@ export default function Chat() {
     <section className="Chat">
       {global.receiver || global.currentConvoId ? (
         <>
-          <ChatHeader participants={currentConversation.participants} />
-          <Mails currentConversation={currentConversation} />
-          <MailForm receiverEmail={currentConversation.participants[0].email} />
+          <ChatHeader
+            participants={
+              global.currentConvoId
+                ? currentConversation.participants.filter(
+                    (user) => user.email !== userData.email
+                  )
+                : null
+            }
+          />
+          <Mails
+            currentConversation={
+              global.currentConvoId ? currentConversation : null
+            }
+          />
+          <MailForm
+            participants={
+              global.currentConvoId
+                ? currentConversation.participants.filter(
+                    (user) => user.email !== userData.email
+                  )
+                : null
+            }
+            receiverEmail={
+              global.currentConvoId
+                ? currentConversation.participants.filter(
+                    (user) => user.email !== userData.email
+                  )[0].email
+                : global.receiver.email
+            }
+          />
         </>
       ) : (
         <section className={styles.noActiveConvo}>

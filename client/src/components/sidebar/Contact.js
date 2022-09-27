@@ -9,7 +9,6 @@ import addFriend from "../../images/add-friend.png";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
-  setCurrentConvo,
   setCurrentConvoId,
   setReceiver,
 } from "../../store/slices/globalsSlice";
@@ -41,7 +40,6 @@ export default function Contact({ contact }) {
       onClick={
         isFriend(contact.id)
           ? () => {
-              console.log("clicked!");
               let found = false;
 
               conversationsSlice.conversations.forEach((conversation) => {

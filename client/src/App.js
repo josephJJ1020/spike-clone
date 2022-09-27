@@ -23,12 +23,11 @@ import {
   acceptOffer,
   acceptAnswer,
   addIceCandidate,
-  createPeerConnection,
   rejectOffer,
   handlePreOffer,
-  getLocalStream,
-  getRemoteStream,
   makeOffer,
+  hangUp,
+  handleHangUp,
 } from "./controllers/webrtc";
 
 import { AddConversation } from "./components/sidebar/AddConversation";
@@ -63,7 +62,7 @@ function App() {
   const userDataSlice = useSelector((state) => state.userData);
   const conversationsSlice = useSelector((state) => state.conversations);
   const globalSlice = useSelector((state) => state.global);
-  const { errMsg, offer, accepted } = useSelector((state) => state.callState);
+  const { errMsg, offer, onCall } = useSelector((state) => state.callState);
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -188,29 +187,30 @@ function App() {
     /* --------------------- WebRTC --------------------- */
 
     clientSocket.on("offer", async (data) => {
-      console.log("received offer");
-      // make accept reject screen visible when we receive an offer
-      // only create answer if we accept the call
-      await handlePreOffer(clientSocket, data);
-      dispatch(setRemoteCaller(data.sender));
-      dispatch(setReceivingOffer(true));
-      dispatch(setOffer(data.offer));
-      dispatch(setCallType(data.callType));
+      if (onCall) {
+        clientSocket.emit("call-unavailable", {
+          sender: userDataSlice.userData.email,
+          receiver: data.sender,
+        });
+      } else {
+        console.log("received offer");
+        await handlePreOffer(clientSocket, data);
+        dispatch(setRemoteCaller(data.sender));
+        dispatch(setReceivingOffer(true));
+        dispatch(setOffer(data.offer));
+        dispatch(setCallType(data.callType));
+      }
 
       // do something with the offer
     });
 
     clientSocket.on("answer", async (data) => {
       console.log("received answer");
-      if (!accepted) {
-        await acceptAnswer(clientSocket, data);
-        dispatch(setAccepted(true));
-        console.log("accepted answer");
-        dispatch(setIsCalling(false));
-        dispatch(setOnCall(true));
-      } else {
-        console.log("accepted already");
-      }
+      await acceptAnswer(clientSocket, data);
+      dispatch(setAccepted(true));
+      console.log("accepted answer");
+      dispatch(setIsCalling(false));
+      dispatch(setOnCall(true));
     });
 
     clientSocket.on("add-ice-candidate", async (data) => {
@@ -223,27 +223,48 @@ function App() {
       }
     });
 
-    clientSocket.on("callee-offline", (receiver) => {
-      console.log("callee is offline");
-      dispatch(setIsCalling(false));
-      dispatch(setErrMsg(`${receiver} is offline`));
-      console.log(errMsg);
-    });
-
     clientSocket.on("reject-offer", (rejecter) => {
       console.log("call rejected");
       dispatch(setErrMsg(`${rejecter} rejected your call request.`));
       dispatch(setIsCalling(false));
     });
 
+    clientSocket.on("call-ended", (data) => {
+      dispatch(setErrMsg(`${data.sender} has ended the call.`));
+      dispatch(setOnCall(false));
+      handleHangUp();
+      dispatch(setCallType(null));
+    });
+
+    clientSocket.on("callee-offline", (receiver) => {
+      console.log("callee is offline");
+      dispatch(setIsCalling(false));
+      dispatch(setErrMsg(`${receiver} is offline`));
+    });
+
+    clientSocket.on("call-unavailable", (data) => {
+      dispatch(setIsCalling(false));
+      dispatch(setCallee(null));
+      dispatch(setErrMsg(`${data.sender} is currently unavailable.`));
+      dispatch(setCallType(null));
+    });
+
     return () => {
-      clientSocket.off('offer')
-      clientSocket.off('answer')
-      clientSocket.off('add-ice-candidate')
-      clientSocket.off('callee-offline')
-      clientSocket.off('reject-offer')
-    }
-  }, [userDataSlice, dispatch, conversationsSlice, errMsg]);
+      clientSocket.off("load-conversations");
+      clientSocket.off("new-message");
+      clientSocket.off("new-conversation");
+      clientSocket.off("friend-request");
+      clientSocket.off("accept-friend-request");
+      clientSocket.off("reject-friend-request");
+
+      clientSocket.off("offer");
+      clientSocket.off("answer");
+      clientSocket.off("add-ice-candidate");
+      clientSocket.off("callee-offline");
+      clientSocket.off("reject-offer");
+      clientSocket.off("call-ended");
+    };
+  }, [userDataSlice, dispatch, conversationsSlice, errMsg, onCall]);
 
   const sendMessage = (message) => {
     clientSocket.emit("new-message", {
@@ -276,17 +297,30 @@ function App() {
   };
 
   const videoCall = async (receiver) => {
-    dispatch(setCallType("VIDEO"));
-    // dispatch(setCallee(receiver));
-    dispatch(setIsCalling(true));
-    makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VIDEO");
+    if (receiver !== userDataSlice.userData.email) {
+      dispatch(setCallType("VIDEO"));
+      dispatch(setCallee(receiver));
+      dispatch(setIsCalling(true));
+      makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VIDEO");
+    }
   };
 
   const voiceCall = async (receiver) => {
-    dispatch(setCallType("VOICE"));
-    // dispatch(setCallee(receiver));
-    dispatch(setIsCalling(true));
-    makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VOICE");
+    if (receiver !== userDataSlice.userData.email) {
+      dispatch(setCallType("VOICE"));
+      dispatch(setCallee(receiver));
+      dispatch(setIsCalling(true));
+      makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VOICE");
+    }
+  };
+
+  const disconnectFromCall = async (receiver) => {
+    // send disconnect message to callee
+    hangUp(clientSocket, userDataSlice.userData.email, receiver);
+
+    dispatch(setErrMsg("Call has been disconnected"));
+    dispatch(setOnCall(false));
+    dispatch(setCallType(null));
   };
 
   // data.offer, data.receiver
@@ -315,6 +349,7 @@ function App() {
         voiceCall,
         acceptCall,
         rejectCall,
+        disconnectFromCall,
       }}
     >
       <Router>

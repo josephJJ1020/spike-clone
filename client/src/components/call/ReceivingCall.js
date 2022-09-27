@@ -11,7 +11,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
 export const ReceivingCall = () => {
-  const { receivingOffer, remoteCaller } = useSelector(
+  const { receivingOffer, remoteCaller, callType } = useSelector(
     (state) => state.callState
   );
 
@@ -28,7 +28,7 @@ export const ReceivingCall = () => {
       show={show}
     >
       <Modal.Header>
-        <Modal.Title id="contained-modal-title-vcenter">Video Call</Modal.Title>
+        <Modal.Title id="contained-modal-title-vcenter">{callType} Call</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <h4>{remoteCaller} wants to call!</h4>

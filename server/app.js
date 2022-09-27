@@ -50,8 +50,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  console.log(onlineUsers);
-
   // fetch user conversations and send it to newly connected user; takes in user id; maybe should execute this code on user connection
   socket.on("load-conversations", async (email) => {
     const conversations = await msgController.getUserConversations(email);
@@ -198,6 +196,22 @@ io.on("connection", (socket) => {
     io.to(
       onlineUsers.find((user) => user.email === data.receiver).socketId
     ).emit("reject-offer", data.sender);
+  });
+
+  socket.on("call-ended", (data) => {
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("call-ended", data);
+    }
+  });
+
+  socket.on("call-unavailable", (data) => {
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("call-unavailable", data);
+    }
   });
 
   /* --------------------- disconnect --------------------- */

@@ -36,7 +36,6 @@ export const Calling = () => {
           onClick={() => {
             console.log("cancel call");
             dispatch(setIsCalling(false));
-            // emit cancel call event
           }}
         >
           <img src={endCall} alt="Cancel call" />
