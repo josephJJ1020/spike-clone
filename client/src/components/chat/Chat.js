@@ -22,7 +22,7 @@ export default function Chat() {
         <>
           <ChatHeader participants={currentConversation.participants} />
           <Mails currentConversation={currentConversation} />
-          <MailForm receiver={currentConversation.participants[0]} />
+          <MailForm receiverEmail={currentConversation.participants[0].email} />
         </>
       ) : (
         <section className={styles.noActiveConvo}>

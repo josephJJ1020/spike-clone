@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
     onlineUsers.forEach((user) => {
       if (
         newConversation.participants.some(
-          (participant) => participant.email === user.email 
+          (participant) => participant.email === user.email
         )
       ) {
         io.to(user.socketId).emit("new-message", newConversation);
@@ -156,32 +156,47 @@ io.on("connection", (socket) => {
   });
 
   /* --------------------- WebRTC --------------------- */
-  socket.on('offer', data => {
+  socket.on("offer", (data) => {
     // if receiver is online, send offer to receiver's socket; else send callee-offline event
-    console.log('received offer')
     let receiverOnline;
 
-    onlineUsers.forEach(user => {
+    onlineUsers.forEach((user) => {
       if (user.email === data.receiver) {
-        io.to(user.socketId).emit('offer', data)
-        receiverOnline = true
+        io.to(user.socketId).emit("offer", data);
+        receiverOnline = true;
       }
-    })
+    });
 
     // if receiver is not online, send callee-offline event to caller
     if (!receiverOnline) {
-      io.to(onlineUsers.find(user => user.email === data.sender).socketId).emit('callee-offline', data.receiver)
+      io.to(
+        onlineUsers.find((user) => user.email === data.sender).socketId
+      ).emit("callee-offline", data.receiver);
     }
-  })
+  });
 
-  socket.on('answer', data => {
+  socket.on("answer", (data) => {
     // answering a call means caller is already online
-    server.to(onlineUsers.find(user => user.email === data.receiver).socketId).emit('answer', data)
-  })
+    io.to(
+      onlineUsers.find((user) => user.email === data.receiver).socketId
+    ).emit("answer", data);
+  });
 
-  socket.on('add-ice-candidate', data => {
-    server.to(onlineUsers.find(user => user.email === data.receiver).socketId).emit('add-ice-candidate', data)
-  })
+  socket.on("add-ice-candidate", (data) => {
+    try {
+      io.to(
+        onlineUsers.find((user) => user.email === data.receiver).socketId
+      ).emit("add-ice-candidate", data);
+    } catch (err) {
+    }
+    
+  });
+
+  socket.on("reject-offer", (data) => {
+    io.to(
+      onlineUsers.find((user) => user.email === data.receiver).socketId
+    ).emit("reject-offer", data.sender);
+  });
 
   /* --------------------- disconnect --------------------- */
   socket.on("disconnect", () => {

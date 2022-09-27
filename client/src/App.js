@@ -23,12 +23,19 @@ import {
   createAnswer,
   acceptAnswer,
   addIceCandidate,
-  makeOffer,
   createPeerConnection,
-  setLocalVideo,
+  rejectOffer,
+  handlePreOffer,
+  getLocalStream,
+  getRemoteStream,
+  makeOffer,
 } from "./controllers/webrtc";
 
 import { AddConversation } from "./components/sidebar/AddConversation";
+import { Calling } from "./components/call/Calling";
+import { Error } from "./components/call/Error";
+import { ReceivingCall } from "./components/call/ReceivingCall";
+import { CallScreen } from "./components/call/CallScreen";
 
 import { setUserData } from "./store/slices/userDataSlice";
 import { setOnlineUsers } from "./store/slices/onlineUsersSlice";
@@ -36,7 +43,17 @@ import {
   replaceConvo,
   setConversations,
 } from "./store/slices/conversationsSlice";
-import { setLocalStream } from "./store/slices/peerConnectionSlice";
+import {
+  setIsCalling,
+  setCallee,
+  setErrMsg,
+  setReceivingOffer,
+  setRemoteCaller,
+  setOffer,
+  setOnCall,
+  setCallType,
+  setAccepted
+} from "./store/slices/callStateSlice";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
@@ -46,7 +63,7 @@ function App() {
   const userDataSlice = useSelector((state) => state.userData);
   const conversationsSlice = useSelector((state) => state.conversations);
   const globalSlice = useSelector((state) => state.global);
-  const peerConnectionSlice = useSelector((state) => state.pee);
+  const { errMsg, offer, accepted } = useSelector((state) => state.callState);
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -169,27 +186,57 @@ function App() {
     });
 
     /* --------------------- WebRTC --------------------- */
+
     clientSocket.on("offer", async (data) => {
+      console.log("received offer");
       // make accept reject screen visible when we receive an offer
       // only create answer if we accept the call
-      await createAnswer(data, peerConnectionSlice.peerConnection);
-    });
+      await handlePreOffer(clientSocket, data);
+      dispatch(setRemoteCaller(data.sender));
+      dispatch(setReceivingOffer(true));
+      dispatch(setOffer(data.offer));
+      dispatch(setCallType(data.callType))
 
-    clientSocket.on("reject-offer", (data) => {
-      // popup call rejected screen
-      // data.sender rejected your call; then use setTimeout to clear the call screen
+      // do something with the offer
     });
 
     clientSocket.on("answer", async (data) => {
-      await acceptAnswer(data, peerConnectionSlice.peerConnection);
+      console.log("received answer");
+      if (!accepted) {
+        await acceptAnswer(clientSocket, data);
+        dispatch(setAccepted(true))
+        console.log('accepted answer')
+        dispatch(setIsCalling(false));
+        dispatch(setOnCall(true));
+      } else {
+        console.log('accepted already')
+      }
+      
     });
 
     clientSocket.on("add-ice-candidate", async (data) => {
       if (data.iceCandidate) {
-        await addIceCandidate(data, peerConnectionSlice.peerConnectionSlice);
+        try {
+          await addIceCandidate(data);
+        } catch (err) {
+          console.log(err.message);
+        }
       }
     });
-  }, [userDataSlice, dispatch, conversationsSlice, peerConnectionSlice]);
+
+    clientSocket.on("callee-offline", (receiver) => {
+      console.log("callee is offline");
+      dispatch(setIsCalling(false));
+      dispatch(setErrMsg(`${receiver} is offline`));
+      console.log(errMsg);
+    });
+
+    clientSocket.on("reject-offer", (rejecter) => {
+      console.log("call rejected");
+      dispatch(setErrMsg(`${rejecter} rejected your call request.`));
+      dispatch(setIsCalling(false));
+    });
+  }, [userDataSlice, dispatch, conversationsSlice, errMsg]);
 
   const sendMessage = (message) => {
     clientSocket.emit("new-message", {
@@ -222,12 +269,33 @@ function App() {
   };
 
   const videoCall = async (receiver) => {
-    createPeerConnection(clientSocket, userDataSlice.userData.email, receiver, 'VIDEO');
+    dispatch(setCallType("VIDEO"));
+    // dispatch(setCallee(receiver));
+    dispatch(setIsCalling(true));
+    makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VIDEO");
   };
 
   const voiceCall = async (receiver) => {
-    createPeerConnection(clientSocket, userDataSlice.userData.email, receiver, 'CALL');
-  }
+    dispatch(setCallType("VOICE"));
+    // dispatch(setCallee(receiver));
+    dispatch(setIsCalling(true));
+    makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VOICE");
+  };
+
+  // data.offer, data.receiver
+  const acceptCall = async (receiver) => {
+    await createAnswer(
+      clientSocket,
+      { offer: offer, receiver: receiver },
+      userDataSlice.userData.email
+    );
+
+    dispatch(setOnCall(true));
+  };
+
+  const rejectCall = async (receiver) => {
+    await rejectOffer(clientSocket, userDataSlice.userData.email, receiver);
+  };
 
   return (
     <AppContext.Provider
@@ -237,7 +305,9 @@ function App() {
         friendRequestAction,
         createNewConversation,
         videoCall,
-        voiceCall
+        voiceCall,
+        acceptCall,
+        rejectCall,
       }}
     >
       <Router>
@@ -245,6 +315,10 @@ function App() {
           <TopNav />
 
           <AddConversation />
+          <Calling />
+          <Error />
+          <ReceivingCall />
+          <CallScreen />
           {globalSlice.flashMsg && <FlashMessage />}
 
           <Routes>
