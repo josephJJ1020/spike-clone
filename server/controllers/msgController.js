@@ -9,7 +9,7 @@ const Conversation = mongoose.model("Conversation", ConversationSchema);
 const msgController = {
   // get all conversations where the user is a participant
   getUserConversations: async (email) => {
-    return await Conversation.find({ 'participants.email': email });
+    return await Conversation.find({ "participants.email": email });
   },
 
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
@@ -17,11 +17,13 @@ const msgController = {
     const newConvo = new Conversation({ participants: users });
     await newConvo.save();
 
-    users.forEach(async (email) => {
-      await User.updateOne(
-        { email: email },
-        { $push: { conversations: newConvo._id } }
-      );
+    users.forEach(async (user) => {
+      if (await User.findOne({ email: user.email })) {
+        await User.updateOne(
+          { email: user.email },
+          { $push: { conversations: newConvo._id } }
+        );
+      }
     });
 
     return Conversation.findById(newConvo._id);
@@ -64,7 +66,9 @@ const msgController = {
     if (convo) {
       // check first if user id is in convo, then add message to convo
       if (
-        convo.participants.some((participant) => participant.email === user.email)
+        convo.participants.some(
+          (participant) => participant.email === user.email
+        )
       ) {
         convo.messages.push({
           conversationId: convo._id,
