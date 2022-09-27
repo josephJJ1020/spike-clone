@@ -20,7 +20,7 @@ import PageNotFound from "./components/PageNotFound";
 import FlashMessage from "./components/flash/FlashMessage";
 
 import {
-  createAnswer,
+  acceptOffer,
   acceptAnswer,
   addIceCandidate,
   createPeerConnection,
@@ -52,7 +52,7 @@ import {
   setOffer,
   setOnCall,
   setCallType,
-  setAccepted
+  setAccepted,
 } from "./store/slices/callStateSlice";
 
 // create socket
@@ -195,7 +195,7 @@ function App() {
       dispatch(setRemoteCaller(data.sender));
       dispatch(setReceivingOffer(true));
       dispatch(setOffer(data.offer));
-      dispatch(setCallType(data.callType))
+      dispatch(setCallType(data.callType));
 
       // do something with the offer
     });
@@ -204,14 +204,13 @@ function App() {
       console.log("received answer");
       if (!accepted) {
         await acceptAnswer(clientSocket, data);
-        dispatch(setAccepted(true))
-        console.log('accepted answer')
+        dispatch(setAccepted(true));
+        console.log("accepted answer");
         dispatch(setIsCalling(false));
         dispatch(setOnCall(true));
       } else {
-        console.log('accepted already')
+        console.log("accepted already");
       }
-      
     });
 
     clientSocket.on("add-ice-candidate", async (data) => {
@@ -236,6 +235,14 @@ function App() {
       dispatch(setErrMsg(`${rejecter} rejected your call request.`));
       dispatch(setIsCalling(false));
     });
+
+    return () => {
+      clientSocket.off('offer')
+      clientSocket.off('answer')
+      clientSocket.off('add-ice-candidate')
+      clientSocket.off('callee-offline')
+      clientSocket.off('reject-offer')
+    }
   }, [userDataSlice, dispatch, conversationsSlice, errMsg]);
 
   const sendMessage = (message) => {
@@ -284,7 +291,7 @@ function App() {
 
   // data.offer, data.receiver
   const acceptCall = async (receiver) => {
-    await createAnswer(
+    await acceptOffer(
       clientSocket,
       { offer: offer, receiver: receiver },
       userDataSlice.userData.email

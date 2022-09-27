@@ -37,12 +37,13 @@ export const createPeerConnection = async (
     }
   };
 
-  // receiving tracks from remote stream
-  const newRemoteStream = new MediaStream();
-  remoteStream = newRemoteStream;
+  // // receiving tracks from remote stream
+  // const newRemoteStream = new MediaStream();
+  // remoteStream = newRemoteStream;
 
   peerConnection.ontrack = (event) => {
-    remoteStream.addTrack(event.track);
+    const [newRemoteStream] = event.streams;
+    remoteStream = newRemoteStream;
   };
 
   // add local stream tracks to peer connection
@@ -75,7 +76,7 @@ export const handlePreOffer = async (socket, data) => {
 
 // creating answer after receiving offer from caller
 // only call this function only if we accept caller's offfer (when user presses accept call)
-export const createAnswer = async (socket, data, sender) => {
+export const acceptOffer = async (socket, data, sender) => {
   if (data.offer) {
     const answer = await peerConnection.createAnswer();
     console.log(`answer: ${answer}`);
@@ -106,7 +107,7 @@ export const rejectOffer = async (socket, sender, receiver) => {
 
 // accept answer from callee
 export const acceptAnswer = async (socket, data) => {
-  if (peerConnection.signalingState !== 'stable') {
+  if (peerConnection.signalingState !== "stable") {
     const remoteDescription = new RTCSessionDescription(data.answer);
     await peerConnection.setRemoteDescription(remoteDescription);
   }

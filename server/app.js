@@ -50,6 +50,8 @@ io.on("connection", (socket) => {
     }
   });
 
+  console.log(onlineUsers);
+
   // fetch user conversations and send it to newly connected user; takes in user id; maybe should execute this code on user connection
   socket.on("load-conversations", async (email) => {
     const conversations = await msgController.getUserConversations(email);
@@ -160,12 +162,12 @@ io.on("connection", (socket) => {
     // if receiver is online, send offer to receiver's socket; else send callee-offline event
     let receiverOnline;
 
-    onlineUsers.forEach((user) => {
-      if (user.email === data.receiver) {
-        io.to(user.socketId).emit("offer", data);
-        receiverOnline = true;
-      }
-    });
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("offer", data);
+      receiverOnline = true;
+    }
 
     // if receiver is not online, send callee-offline event to caller
     if (!receiverOnline) {
@@ -177,9 +179,11 @@ io.on("connection", (socket) => {
 
   socket.on("answer", (data) => {
     // answering a call means caller is already online
-    io.to(
-      onlineUsers.find((user) => user.email === data.receiver).socketId
-    ).emit("answer", data);
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("answer", data);
+    }
   });
 
   socket.on("add-ice-candidate", (data) => {
@@ -187,9 +191,7 @@ io.on("connection", (socket) => {
       io.to(
         onlineUsers.find((user) => user.email === data.receiver).socketId
       ).emit("add-ice-candidate", data);
-    } catch (err) {
-    }
-    
+    } catch (err) {}
   });
 
   socket.on("reject-offer", (data) => {
