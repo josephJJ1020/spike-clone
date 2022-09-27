@@ -4,6 +4,7 @@
 
 .App-container {
   display: flex;
+  height: calc(100vh - 100px);
 }
 
 .container {
@@ -33,7 +34,7 @@ a:hover {
 }
 
 .Chat {
-  height: 100vh;
+  height: 100%;
   width: 75vw;
   background-color: whitesmoke;
 }
