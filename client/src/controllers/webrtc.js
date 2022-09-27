@@ -47,7 +47,6 @@ export const createPeerConnection = async (
   // add local stream tracks to peer connection
   localStream = await setLocalMedia(callType);
 
-  console.log(callType);
 };
 
 // make offer; invoke when video call button is pressed; send to receiver, which is an email (will send if receiver is in online users)
@@ -55,8 +54,6 @@ export const makeOffer = async (socket, senderEmail, receiver, callType) => {
   await createPeerConnection(socket, senderEmail, receiver, callType);
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
-
-  console.log(peerConnection.signalingState);
 
   socket.emit("offer", {
     sender: senderEmail,
@@ -77,11 +74,8 @@ export const handlePreOffer = async (socket, data) => {
 export const acceptOffer = async (socket, data, sender) => {
   if (data.offer) {
     const answer = await peerConnection.createAnswer();
-    console.log(`answer: ${answer}`);
     await peerConnection.setLocalDescription(answer);
 
-    console.log(data.receiver);
-    console.log(peerConnection.signalingState);
     sendAnswer(socket, data.receiver, answer, sender);
   }
 };
@@ -116,10 +110,8 @@ export const addIceCandidate = async (data) => {
   if (data.iceCandidate) {
     if (!peerConnection || !peerConnection.remoteDescription) {
       iceCandidateQueue.push(data.iceCandidate);
-      console.log(iceCandidateQueue.length);
     } else {
       iceCandidateQueue.forEach((iceCandidate) => {
-        console.log("adding ice candidate to pc");
         peerConnection.addIceCandidate(iceCandidate);
       });
     }
@@ -141,12 +133,10 @@ export const setLocalMedia = async (callType) => {
 };
 
 export const getLocalStream = () => {
-  console.log(localStream);
   return localStream;
 };
 
 export const getRemoteStream = () => {
-  console.log(remoteStream);
   return remoteStream;
 };
 

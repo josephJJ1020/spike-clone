@@ -33,7 +33,6 @@ let onlineUsers = []; // list of online users
 /* -------------------------- SOCKET SIGNALING SERVER -------------------------- */
 
 io.on("connection", (socket) => {
-  // console.log(`users: ${onlineUsers.length}`);
 
   socket.on("user-connection", (data) => {
     if (data.id) {
@@ -44,7 +43,6 @@ io.on("connection", (socket) => {
         email: data.email,
         socketId: socket.id,
       });
-      // console.log(onlineUsers)
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
     }
@@ -111,7 +109,6 @@ io.on("connection", (socket) => {
         data.requesterId,
         data.receiverId
       );
-      console.log("friend request sent! ");
 
       // send friend request event to receiver through their socket
       const onlineUser = onlineUsers.find(
@@ -121,17 +118,16 @@ io.on("connection", (socket) => {
         io.to(onlineUser.socketId).emit("friend-request", friendRequest);
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   });
 
   socket.on("friend-request-action", async (data) => {
     try {
       const notifs = await controller.handleFriendRequest(data);
-      console.log(notifs);
       // update both sender and receiver notifications
       if (notifs.senderData && notifs.accepterData) {
-        console.log("friend request accepted!");
+
         onlineUsers.forEach((user) => {
           // look for user who accepted the friend request (data.sender)
           if (user.id === data.sender) {
@@ -151,7 +147,7 @@ io.on("connection", (socket) => {
         io.to(socket.id).emit("reject-friend-request", notifs.accepterData);
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   });
 
@@ -224,17 +220,14 @@ io.on("connection", (socket) => {
 
 // user signup
 app.post("/signup", async (req, res) => {
-  console.log("someone signed up!!");
 
   if (!req.body || req.body === undefined) {
-    console.log("no data sent");
     return res.send(new Error("No signup credentials specified"));
   }
 
   let { email, password, firstName, lastName } = req.body;
 
   if (!email || !password || !firstName || !lastName) {
-    console.log("incomplete credentials");
     return res.send(new Error("Please complete signup credentials"));
   }
 
@@ -246,7 +239,6 @@ app.post("/signup", async (req, res) => {
       password,
     });
 
-    console.log(newUser);
     return res.send(newUser);
   } catch (err) {
     console.log(err.message);
@@ -265,22 +257,18 @@ app.post("/login", async (req, res) => {
   // if user ID is used to query (meaning user ID is in client session)
   if (id) {
     try {
-      console.log(`id: ${id}`);
       const userData = await controller.searchUser(id);
-      console.log(userData);
       return res.send(userData);
     } catch (err) {
-      return res.send(err);
+      return res.send(err.message);
     }
 
     // if user email and user password are used to query (meaning )
   } else if (email && password) {
-    console.log("someone logged in!");
     try {
       const userData = await controller.searchUser({ email, password });
 
       if (userData) {
-        console.log(userData);
         return res.send(userData);
       } else {
         return res.status(409).send("Failed to find user!");
