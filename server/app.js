@@ -33,7 +33,6 @@ let onlineUsers = []; // list of online users
 /* -------------------------- SOCKET SIGNALING SERVER -------------------------- */
 
 io.on("connection", (socket) => {
-
   socket.on("user-connection", (data) => {
     if (data.id) {
       onlineUsers.push({
@@ -127,7 +126,6 @@ io.on("connection", (socket) => {
       const notifs = await controller.handleFriendRequest(data);
       // update both sender and receiver notifications
       if (notifs.senderData && notifs.accepterData) {
-
         onlineUsers.forEach((user) => {
           // look for user who accepted the friend request (data.sender)
           if (user.id === data.sender) {
@@ -220,25 +218,49 @@ io.on("connection", (socket) => {
 
 // user signup
 app.post("/signup", async (req, res) => {
-
+  console.log(req.body);
   if (!req.body || req.body === undefined) {
     return res.send(new Error("No signup credentials specified"));
   }
 
-  let { email, password, firstName, lastName } = req.body;
+  let {
+    email,
+    password,
+    emailService,
+    inboundHost,
+    inboundPort,
+    outboundHost,
+    outboundPort,
+  } = req.body;
 
-  if (!email || !password || !firstName || !lastName) {
+  if (!email || !password || !emailService || !inboundHost || !inboundPort) {
+    console.log("error");
     return res.send(new Error("Please complete signup credentials"));
   }
 
   try {
-    const newUser = await controller.createUser({
-      firstName,
-      lastName,
-      email,
-      password,
-    });
+    let newUser;
+    if (outboundHost || outboundHost.length) {
+      newUser = await controller.createUser({
+        email,
+        password,
+        emailService,
+        inboundHost,
+        inboundPort: parseInt(inboundPort),
+        outboundHost,
+        outboundPort: parseInt(outboundPort),
+      });
+    } else {
+      newUser = await controller.createUser({
+        email,
+        password,
+        emailService,
+        inboundHost,
+        inboundPort: parseInt(inboundPort),
+      });
+    }
 
+    console.log(newUser);
     return res.send(newUser);
   } catch (err) {
     console.log(err.message);

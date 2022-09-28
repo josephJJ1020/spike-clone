@@ -98,7 +98,7 @@ export default function Login() {
         <input
           type="submit"
           value="Sign in"
-          className="btn btn-primary"
+          className="btn"
           onClick={submit}
         />
         <p>

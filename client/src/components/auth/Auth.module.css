@@ -58,11 +58,27 @@
     padding: 22px;
 }
 
-.SignUpForm input {
+.SignUpForm input, .SignUpForm select {
     max-width: 600px;
     width: 90%;
 }
 
 .SignUpForm input[type="submit"] {
     background-color: #FFB739;
+}
+
+.HostDetails {
+    display: flex;
+}
+
+.HostDetails input {
+    max-width: 400px;
+    width: 90%;
+}
+
+.InboundDetails, .OutboundDetails {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

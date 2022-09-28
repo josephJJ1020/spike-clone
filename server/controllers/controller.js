@@ -6,7 +6,15 @@ const bcrypt = require("bcrypt");
 const User = mongoose.model("User", UserSchema);
 
 const controller = {
-  createUser: async ({ firstName, lastName, email, password }) => {
+  createUser: async ({
+    email,
+    password,
+    emailService,
+    inboundHost,
+    inboundPort,
+    outboundHost,
+    outboundPort,
+  }) => {
     // check if email already exists
     const existingUser = await User.findOne({ email: email }).then(
       (data) => data
@@ -21,13 +29,18 @@ const controller = {
 
     // create new user
     let newUser = new User({
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
+      email,
       password: hashedPassword,
+      emailService,
+      inboundHost,
+      inboundPort,
+      outboundHost,
+      outboundPort,
     });
+    console.log(newUser);
 
     try {
+      // not saving
       // save user and return user data
       await newUser.save();
       const user = await User.findOne({ email: email });
@@ -36,6 +49,8 @@ const controller = {
         return user;
       }
     } catch (err) {
+      // it's going to here
+      console.log(err.message)
       return new Error("Failed to create new user");
     }
   },

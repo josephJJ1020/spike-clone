@@ -24,13 +24,13 @@ export default function TopNav() {
     <nav className={styles.TopNav}>
       <div>
         <Link to="/">
-          <h3>Spike Clone</h3>
+          <p>Spike Clone</p>
         </Link>
       </div>
       <ul>
         {userData.userId ? (
           <>
-            <li>{userData.userData.firstName}</li>
+            <li>{userData.userData.email}</li>
             <li>
               <Dropdown className="shadow-none" align="end">
                 <Dropdown.Toggle
@@ -44,7 +44,8 @@ export default function TopNav() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {userData.userData.notifications && userData.userData.notifications.length ? (
+                  {userData.userData.notifications &&
+                  userData.userData.notifications.length ? (
                     userData.userData.notifications.map((notif, index) => {
                       if (notif && notif.type === "friend-request") {
                         return (

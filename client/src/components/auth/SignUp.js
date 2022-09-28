@@ -9,18 +9,35 @@ import { setFlashMsg } from "../../store/slices/globalsSlice";
 export default function SignUp() {
   const global = useSelector((state) => state.global);
   const dispatch = useDispatch();
-  // const { signUp, setFlashMsg } = useContext(AppContext);
-  const [firstName, setFirstName] = useInput("");
-  const [lastName, setLastName] = useInput("");
+
   const [email, setEmail] = useInput("");
   const [pw, setPw] = useInput("");
 
-  const signUp = async (email, password, firstName, lastName) => {
+  const [emailService, setEmailService] = useInput("HOTMAIL");
+
+  const [inboundHost, setInboundHost] = useInput("");
+  const [inboundPort, setInboundPort] = useInput("");
+  const [outboundHost, setOutboundHost] = useInput("");
+  const [outboundPort, setOutboundPort] = useInput("");
+
+  const signUp = async (
+    email,
+    password,
+    emailService,
+    inboundHost,
+    inboundPort,
+    outboundHost,
+    outboundPort
+  ) => {
+    console.log(password)
     const userData = await getAuth({
       email: email,
       password: password,
-      firstName: firstName,
-      lastName: lastName,
+      emailService: emailService,
+      inboundHost: inboundHost,
+      inboundPort: inboundPort,
+      outboundHost: outboundHost,
+      outboundPort: outboundPort,
       action: "SIGNUP",
     });
     if (global.flashMsg) return;
@@ -38,18 +55,18 @@ export default function SignUp() {
   };
 
   const submit = (e) => {
+    console.log('submitted')
     e.preventDefault();
-    var trimmedFirstName = firstName.value.replace(/\s/g, ""),
-      trimmedLastName = lastName.value.replace(/\s/g, ""),
-      trimmedEmail = email.value.replace(/\s/g, ""),
-      trimmedPw = pw.value.replace(/\s/g, "");
+    var trimmedEmail = email.value.replace(/\s/g, ""),
+      trimmedPw = pw.value.replace(/\s/g, ""),
+      trimmedEmailService = emailService.value.replace(/\s/g, ""),
+      trimmedInboundHost = inboundHost.value.replace(/\s/g, ""),
+      trimmedInboundPort = inboundPort.value.replace(/\s/g, ""),
+      trimmedOutboundHost = outboundHost.value.replace(/\s/g, ""),
+      trimmedOutboundPort = outboundPort.value.replace(/\s/g, "");
 
-    if (!trimmedFirstName.length || !trimmedLastName.length) {
-      dispatch(
-        setFlashMsg({ type: "error", message: "Name fields must not be empty" })
-      );
-      return;
-    } else if (!trimmedEmail.length) {
+      console.log(trimmedInboundHost)
+    if (!trimmedEmail.length) {
       dispatch(
         setFlashMsg({ type: "error", message: "Email must not be empty" })
       );
@@ -67,13 +84,44 @@ export default function SignUp() {
         })
       );
       return;
+    } else if (!trimmedInboundHost || !trimmedInboundPort) {
+      dispatch(
+        setFlashMsg({
+          type: "error",
+          message: "Please provide detailsinbound email service",
+        })
+      );
+      return;
+    } else if (
+      trimmedEmailService !== "HOTMAIL" &&
+      (!trimmedOutboundHost || !trimmedOutboundPort)
+    ) {
+      dispatch(
+        setFlashMsg({
+          type: "error",
+          message: "Please provide detailsinbound email service",
+        })
+      );
+      return;
     }
 
-    signUp(trimmedEmail, trimmedPw, trimmedFirstName, trimmedLastName);
-    setFirstName("");
-    setLastName("");
+    console.log(trimmedPw)
+    signUp(
+      trimmedEmail,
+      trimmedPw,
+      trimmedEmailService,
+      trimmedInboundHost,
+      trimmedInboundPort,
+      trimmedOutboundHost,
+      trimmedOutboundPort
+    );
     setEmail("");
     setPw("");
+    setEmailService("HOTMAIL");
+    setInboundHost("");
+    setInboundPort(null);
+    setOutboundHost("");
+    setOutboundPort(null);
   };
 
   return (
@@ -86,24 +134,6 @@ export default function SignUp() {
       </header>
 
       <form className={styles.SignUpForm}>
-        <label htmlFor="firstname">First Name</label>
-        <input
-          type="text"
-          name="firstname"
-          id="firstname"
-          className="form-control"
-          {...firstName}
-        />
-
-        <label htmlFor="lastname">Last Name</label>
-        <input
-          type="text"
-          name="lastname"
-          id="lastname"
-          className="form-control"
-          {...lastName}
-        />
-
         <label htmlFor="email">Email</label>
         <input
           type="email"
@@ -121,6 +151,58 @@ export default function SignUp() {
           className="form-control"
           {...pw}
         />
+
+        <label htmlFor="email-service">Email Service</label>
+        <select
+          className="form-select"
+          aria-label="Email Service"
+          {...emailService}
+        >
+          <option defaultValue value="HOTMAIL">
+            Hotmail
+          </option>
+          <option value="OUTLOOK">Outlook</option>
+        </select>
+        <section className={styles.HostDetails}>
+          <section className={styles.InboundDetails}>
+            <label htmlFor="inbound-host">Inbound host</label>
+            <input
+              type="text"
+              name="inbound-host"
+              id="inbound-host"
+              className="form-control"
+              {...inboundHost}
+            />
+            <label htmlFor="inbound-port">Inbound port</label>
+            <input
+              type="number"
+              name="inbound-port"
+              id="inbound-port"
+              className="form-control"
+              {...inboundPort}
+            />
+          </section>
+          {emailService.value === "HOTMAIL" ? null : (
+            <section className={styles.OutboundDetails}>
+              <label htmlFor="outbound-host">Outbound host</label>
+              <input
+                type="text"
+                name="outbound-host"
+                id="outbound-host"
+                className="form-control"
+                {...outboundHost}
+              />
+              <label htmlFor="outbound-port">Outbound port</label>
+              <input
+                type="number"
+                name="outbound-port"
+                id="outbound-port"
+                className="form-control"
+                {...outboundPort}
+              />
+            </section>
+          )}
+        </section>
 
         <input
           type="submit"

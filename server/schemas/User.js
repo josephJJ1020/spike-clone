@@ -6,16 +6,6 @@ const validateEmail = (email) => {
 };
 
 const UserSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: "First name is required",
-  },
-
-  lastName: {
-    type: String,
-    required: "Last name is required",
-  },
-
   email: {
     type: String,
     required: "Email is required",
@@ -26,6 +16,31 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: "Password is requried",
+  },
+
+  emailService: {
+    type: String,
+    required: "Email service is required",
+  },
+
+  inboundHost: {
+    type: String,
+    required: "Inbound host is required",
+  },
+
+  inboundPort: {
+    type: Number,
+    required: "Inbound port is required",
+  },
+
+  outboundHost: {
+    type: String,
+    default: null,
+  },
+
+  outboundPort: {
+    type: Number,
+    default: null,
   },
 
   dateCreated: {
@@ -41,7 +56,7 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
-  
+
   conversations: {
     type: Array,
     default: [],
@@ -49,8 +64,8 @@ const UserSchema = new mongoose.Schema({
 
   notifications: {
     type: Array,
-    default: []
-  }
+    default: [],
+  },
 });
 
 module.exports = UserSchema;

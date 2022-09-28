@@ -138,9 +138,25 @@ a:hover {
   z-index: 2;
   cursor: pointer;
   overflow-x: visible;
-  transition: background-color .3s;
+  transition: background-color 0.3s;
 }
 
 .Contact:hover {
   background-color: rgb(81, 128, 129);
+}
+
+button,
+input[type="submit"],
+.btn {
+  border: none;
+  background-color: #ffb739;
+  color: #9e502f;
+}
+
+button:hover,
+input[type="submit"]:hover,
+.btn:hover {
+  border: none;
+  background-color: #ac8137;
+  color: #9e502f;
 }
