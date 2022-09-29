@@ -12,6 +12,17 @@ const msgController = {
     return await Conversation.find({ "participants.email": email });
   },
 
+  getConversationIdByParticipants: async (participants) => {
+    try {
+      return await Conversation.find(
+        { participants: participants },
+        { _id: 1 }
+      );
+    } catch (err) {
+      console.log(err.message)
+    }
+  },
+
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
   makeConversation: async (users) => {
     const newConvo = new Conversation({ participants: users });
@@ -30,7 +41,7 @@ const msgController = {
   },
 
   addMessage: async (user, message, convoId, filesList) => {
-    console.log(`filesList in controller: ${filesList}`)
+    console.log(`filesList in controller: ${filesList}`);
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
       let convo = new Conversation({

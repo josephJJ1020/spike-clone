@@ -1,13 +1,11 @@
 const fs = require("fs");
 
-const { promisify } = require("util");
-const writeFile = promisify(fs.writeFile);
-
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const { controller, User } = require("./controllers/controller");
 const msgController = require("./controllers/msgController");
+const EmailListener = require("./email/mailListener");
 const sendMail = require("./email/sendEmail");
 
 const mongoose = require("mongoose");
@@ -35,11 +33,16 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3001;
 
 let onlineUsers = []; // list of online users
+let emailListeners = [];
 
 /* -------------------------- SOCKET SIGNALING SERVER -------------------------- */
 
 io.on("connection", (socket) => {
-  socket.on("user-connection", (data) => {
+  socket.on("login", (data) => {
+    // init user's email listener
+  });
+
+  socket.on("user-connection", async (data) => {
     if (data.id) {
       onlineUsers.push({
         id: data.id,
@@ -48,6 +51,34 @@ io.on("connection", (socket) => {
       });
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
+
+      const listener = emailListeners.find(
+        (listener) => listener.email === data.email
+      );
+
+      if (!listener) {
+        const user = await controller.searchUserForNodemailer(data.email);
+
+        if (user) {
+          console.log(user);
+          const emailListener = new EmailListener(
+            user.email,
+            user.password,
+            user.inboundHost,
+            user.inboundPort,
+            io,
+            onlineUsers
+          );
+
+          emailListeners.push(emailListener);
+          emailListener.init();
+          emailListener.start();
+
+          emailListeners.forEach((listener) => {
+            listener.setOnlineUsers(onlineUsers);
+          });
+        }
+      }
     }
   });
 
@@ -281,8 +312,23 @@ io.on("connection", (socket) => {
     }
   });
 
-  /* --------------------- disconnect --------------------- */
+  /* --------------------- disconnect/logout --------------------- */
+  socket.on("logout", (data) => {
+    //note: only start mail user's mail listener on "login" event sent after user logs in/signs up
+    // or maybe just keep it running forever
+    // stop and remove user's email listener from emailListeners array
+    const emailListener = emailListeners.find(
+      (listener) => listener.email === data.email
+    );
+    emailListener.close();
+    emailListeners = emailListeners.filter(
+      (listener) => listener.email !== emailListener.email
+    );
+  });
   socket.on("disconnect", () => {
+    const user = onlineUsers.find((user) => user.socketId === socket.id);
+
+    // remove user from onlineUsers array
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
   });
 });
@@ -382,17 +428,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// send message with attachments
-app.post("/send-message", (req, res) => {
-  if (!req.body) {
-    return res.status(409).send("No message received");
-  }
-
-  const { user, message, convoId, files } = req.body;
-
-  console.log(message, files);
-});
-
+// view message attachment
 app.get("/:filename", (req, res) => {
   res.sendFile(`${__dirname}/files/${req.params.filename}`);
 });
