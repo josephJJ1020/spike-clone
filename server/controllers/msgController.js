@@ -29,7 +29,8 @@ const msgController = {
     return Conversation.findById(newConvo._id);
   },
 
-  addMessage: async (user, message, convoId) => {
+  addMessage: async (user, message, convoId, filesList) => {
+    console.log(`filesList in controller: ${filesList}`)
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
       let convo = new Conversation({
@@ -44,6 +45,7 @@ const msgController = {
             id: uuid().slice(0, 6),
             from: user,
             content: message.content,
+            files: filesList,
             dateCreated: Date.now(),
           },
         },
@@ -75,6 +77,7 @@ const msgController = {
           id: uuid().slice(0, 6),
           from: user,
           content: message.content,
+          files: filesList,
           dateCreated: Date.now(),
         });
 

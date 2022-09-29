@@ -1,8 +1,9 @@
 import React from "react";
+import Badge from "react-bootstrap/esm/Badge";
 
 import { useSelector } from "react-redux";
 
-export default function Mails({currentConversation}) {
+export default function Mails({ currentConversation }) {
   const userDataSlice = useSelector((state) => state.userData);
 
   return (
@@ -17,6 +18,16 @@ export default function Mails({currentConversation}) {
                   : message.from.email}
               </strong>
               {`: ${message.content}`}
+              <section>
+                {message.files &&
+                  message.files.map((file, index) => {
+                    return (
+                      <a href={file.fileLink} target="_blank" rel="noreferrer" key={index}>
+                        <Badge>{file.filename}</Badge>
+                      </a>
+                    );
+                  })}
+              </section>
             </div>
           );
         })

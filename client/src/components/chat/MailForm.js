@@ -17,10 +17,14 @@ export default function MailForm({ participants, receiverEmail }) {
     event.preventDefault();
 
     if (message.value.length) {
-      console.log(uploadedFiles)
-      sendMessage(message.value, uploadedFiles); // receiver and sender will be defined in App.js; this only sends message.content
+      console.log(uploadedFiles);
+
+      sendMessage(
+        message.value,
+        uploadedFiles.map((file) => ({ filename: file.name, file: file }))
+      ); // receiver and sender will be defined in App.js; this only sends message.content
       setMessage("");
-      setUploadedFiles()
+      setUploadedFiles([]);
     }
   };
 
@@ -85,6 +89,7 @@ export default function MailForm({ participants, receiverEmail }) {
           multiple
           style={{ display: "none" }}
           onChange={handleFileEvent}
+          accept=".png, .jpg, .pdf, .doc, .docx"
         />
         <label htmlFor="fileUpload" className={styles.FileUploadLabel}>
           <a className={styles.FileUploadButton}>
@@ -94,9 +99,7 @@ export default function MailForm({ participants, receiverEmail }) {
       </div>
 
       <div className="uploaded-files-list">
-        {uploadedFiles && uploadedFiles.map((file) => (
-          <div>{file.name}</div>
-        ))}
+        {uploadedFiles && uploadedFiles.map((file) => <div>{file.name}</div>)}
       </div>
 
       <button className="btn" onClick={submit} type="submit">

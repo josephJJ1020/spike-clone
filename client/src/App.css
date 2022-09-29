@@ -139,7 +139,6 @@ a:hover {
   cursor: pointer;
   overflow-x: visible;
   transition: background-color 0.3s;
-  
 }
 
 .Contact:hover {
@@ -148,16 +147,27 @@ a:hover {
 
 button,
 input[type="submit"],
-.btn {
+.btn,
+.badge,
+.bg-primary {
   border: none;
-  background-color: #ffb739;
+  background-color: #ffb739 !important;
   color: #9e502f;
 }
 
 button:hover,
 input[type="submit"]:hover,
-.btn:hover {
+.btn:hover,
+.badge:hover,
+.bg-primary:hover {
+  transition: background-color .3s;
   border: none;
-  background-color: #ac8137;
+  background-color: #ac8137 !important;
   color: #9e502f;
+}
+
+.badge,
+.bg-primary {
+  padding: 12px;
+  margin: 5px;
 }

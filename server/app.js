@@ -1,3 +1,8 @@
+const fs = require("fs");
+
+const { promisify } = require("util");
+const writeFile = promisify(fs.writeFile);
+
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -38,8 +43,6 @@ io.on("connection", (socket) => {
     if (data.id) {
       onlineUsers.push({
         id: data.id,
-        // firstName: data.firstName,
-        // lastName: data.lastName,
         email: data.email,
         socketId: socket.id,
       });
@@ -88,41 +91,70 @@ io.on("connection", (socket) => {
 
       console.log(files);
 
-      const newConversation = await msgController.addMessage(
-        user,
-        message,
-        convoId
-      );
+      // note: store file names as well, not just the buffer, in the frontend
+      // so it can be used for the file upload path name (done)
 
-      // set up toEmails array
-      let toEmailsArray = [];
+      let filesList = [];
 
-      newConversation.participants.forEach((participant) => {
-        if (participant.email !== user.email) {
-          toEmailsArray.push(participant.email);
+      // 1. upload files to file directory and add each file to filesList array (which will be passed into the message controller)
+      files.forEach(async (file) => {
+        try {
+          if (!fs.existsSync(`${__dirname}/files/${file.filename}`)) {
+            fs.writeFileSync(`${__dirname}/files/${file.filename}`, file.file);
+
+            filesList.push({
+              filename: file.filename,
+              fileLink: `http://localhost:3001/${file.filename}`,
+            });
+
+            console.log(`uploaded ${file.filename}`);
+            console.log(filesList);
+          }
+        } catch (err) {
+          console.log(err);
         }
       });
 
-      try {
-        const mailer = await controller.searchUserForNodemailer(user.email);
-        // create email after storing message in database
-        console.log(mailer.email)
-        console.log(mailer.emailService);
+      // 4. push message object to conversation document in database
+      // 5. emit updated conversation including the filenames and filelinks
+      //
+      const newConversation = await msgController.addMessage(
+        user,
+        message,
+        convoId,
+        filesList
+      );
 
-        sendMail({
-          fromEmail: mailer.email,
-          password: mailer.password,
-          service: mailer.emailService,
-          host: mailer.outboundHost,
-          port: mailer.outboundPort,
-          toEmails: toEmailsArray,
-          subject: subject,
-          text: message.content,
-        });
-        console.log("email sent");
-      } catch (err) {
-        console.log(err);
-      }
+      console.log(`filesList: ${filesList}`);
+      // set up toEmails array
+      let toEmailsArray = [];
+
+      // newConversation.participants.forEach((participant) => {
+      //   if (participant.email !== user.email) {
+      //     toEmailsArray.push(participant.email);
+      //   }
+      // });
+
+      // try {
+      //   const mailer = await controller.searchUserForNodemailer(user.email);
+      //   // create email after storing message in database
+      //   console.log(mailer.email)
+      //   console.log(mailer.emailService);
+
+      //   sendMail({
+      //     fromEmail: mailer.email,
+      //     password: mailer.password,
+      //     service: mailer.emailService,
+      //     host: mailer.outboundHost,
+      //     port: mailer.outboundPort,
+      //     toEmails: toEmailsArray,
+      //     subject: subject,
+      //     text: message.content,
+      //   });
+      //   console.log("email sent");
+      // } catch (err) {
+      //   console.log(err);
+      // }
 
       onlineUsers.forEach((user) => {
         if (
@@ -327,7 +359,7 @@ app.post("/login", async (req, res) => {
   } else if (email && password) {
     try {
       const userData = await controller.searchUser({ email, password });
-
+      console.log(`found user: ${userData.email}`);
       if (userData) {
         return res.send(userData);
       } else {
@@ -356,6 +388,10 @@ app.post("/send-message", (req, res) => {
   const { user, message, convoId, files } = req.body;
 
   console.log(message, files);
+});
+
+app.get("/:filename", (req, res) => {
+  res.sendFile(`${__dirname}/files/${req.params.filename}`);
 });
 
 // handle invalid routes

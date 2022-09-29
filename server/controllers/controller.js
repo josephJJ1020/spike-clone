@@ -57,6 +57,8 @@ const controller = {
 
   // searchUser method used for login
   searchUser: async ({ id, email, password }) => {
+    console.log(`login email: ${email}`)
+    console.log(`login password: ${password}`)
     if (email && password) {
       try {
         const user = await User.findOne({
@@ -75,6 +77,7 @@ const controller = {
           // } else {
           //   console.log(`passwords don't match`);
           // }
+          return user
         }
       } catch (err) {
         // console.log(err)
