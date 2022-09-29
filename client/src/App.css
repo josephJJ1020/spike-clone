@@ -139,6 +139,7 @@ a:hover {
   cursor: pointer;
   overflow-x: visible;
   transition: background-color 0.3s;
+  
 }
 
 .Contact:hover {

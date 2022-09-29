@@ -24,13 +24,13 @@ const controller = {
       return new Error("Email already exists");
     }
 
-    // hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // hash password (omitted for testing with )
+    /* const hashedPassword = await bcrypt.hash(password, 10); */
 
     // create new user
     let newUser = new User({
       email,
-      password: hashedPassword,
+      password,
       emailService,
       inboundHost,
       inboundPort,
@@ -50,7 +50,7 @@ const controller = {
       }
     } catch (err) {
       // it's going to here
-      console.log(err.message)
+      console.log(err.message);
       return new Error("Failed to create new user");
     }
   },
@@ -61,19 +61,20 @@ const controller = {
       try {
         const user = await User.findOne({
           email: email,
+          password: password, // uses plaintext password currently for nodemailer testing
         });
 
         console.log(user);
 
         if (user) {
-          const match = await comparePasswords(password, user.password);
-          console.log(match);
-
-          if (match) {
-            return user;
-          } else {
-            console.log(`passwords don't match`);
-          }
+          // hashing omitted for nodemailer testing
+          // const match = await comparePasswords(password, user.password);
+          // console.log(match);
+          // if (match) {
+          //   return user;
+          // } else {
+          //   console.log(`passwords don't match`);
+          // }
         }
       } catch (err) {
         // console.log(err)
@@ -96,6 +97,13 @@ const controller = {
     }
   },
 
+  searchUserForNodemailer: async (email) => {
+    try {
+      return await User.findOne({email: email})
+    } catch (err) {
+      console.log(err.message)
+    }
+  },
   // handles sent friend requests
   sendFriendRequest: async (requesterId, receiverId) => {
     console.log(`requesterId: ${requesterId}`);

@@ -284,7 +284,7 @@ function App() {
 
 
   // send new message to conversation
-  const sendMessage = (message) => {
+  const sendMessage = (message, files) => {
     clientSocket.emit("new-message", {
       user: {
         id: userDataSlice.userId,
@@ -295,6 +295,7 @@ function App() {
         content: message,
       },
       convoId: globalSlice.currentConvoId,
+      files: files
     });
   };
 

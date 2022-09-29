@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const { controller, User } = require("./controllers/controller");
 const msgController = require("./controllers/msgController");
+const sendMail = require("./email/sendEmail");
 
 const mongoose = require("mongoose");
 
@@ -80,25 +81,62 @@ io.on("connection", (socket) => {
   });
 
   // send new message
-  socket.on("new-message", async ({ user, message, convoId }) => {
-    const newConversation = await msgController.addMessage(
-      user,
-      message,
-      convoId
-    );
+  socket.on(
+    "new-message",
+    async ({ user, message, convoId, subject = null, files }) => {
+      console.log(`user email: ${user.email}`);
 
-    onlineUsers.forEach((user) => {
-      if (
-        newConversation.participants.some(
-          (participant) => participant.email === user.email
-        )
-      ) {
-        io.to(user.socketId).emit("new-message", newConversation);
+      console.log(files);
+
+      const newConversation = await msgController.addMessage(
+        user,
+        message,
+        convoId
+      );
+
+      // set up toEmails array
+      let toEmailsArray = [];
+
+      newConversation.participants.forEach((participant) => {
+        if (participant.email !== user.email) {
+          toEmailsArray.push(participant.email);
+        }
+      });
+
+      try {
+        const mailer = await controller.searchUserForNodemailer(user.email);
+        // create email after storing message in database
+        console.log(mailer.email)
+        console.log(mailer.emailService);
+
+        sendMail({
+          fromEmail: mailer.email,
+          password: mailer.password,
+          service: mailer.emailService,
+          host: mailer.outboundHost,
+          port: mailer.outboundPort,
+          toEmails: toEmailsArray,
+          subject: subject,
+          text: message.content,
+        });
+        console.log("email sent");
+      } catch (err) {
+        console.log(err);
       }
-    });
 
-    // participant will then add this new convo to conversations list in the frontend
-  });
+      onlineUsers.forEach((user) => {
+        if (
+          newConversation.participants.some(
+            (participant) => participant.email === user.email
+          )
+        ) {
+          io.to(user.socketId).emit("new-message", newConversation);
+        }
+      });
+
+      // participant will then add this new convo to conversations list in the frontend
+    }
+  );
 
   // takes in receiverId, requesterId
   socket.on("friend-request", async (data) => {
@@ -307,6 +345,17 @@ app.post("/login", async (req, res) => {
     // new Error("No ID, email, or password specified")
     return res.send(new Error("No ID, email, or password specified"));
   }
+});
+
+// send message with attachments
+app.post("/send-message", (req, res) => {
+  if (!req.body) {
+    return res.status(409).send("No message received");
+  }
+
+  const { user, message, convoId, files } = req.body;
+
+  console.log(message, files);
 });
 
 // handle invalid routes

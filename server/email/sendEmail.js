@@ -1,7 +1,7 @@
 require("dotenv").config();
 var nodemailer = require("nodemailer");
 
-const sendEmail = (
+const sendEmail = ({
   fromEmail,
   password,
   service,
@@ -9,11 +9,12 @@ const sendEmail = (
   port = null,
   toEmails,
   subject = null,
-  text
-) => {
+  text,
+}) => {
   let transporterConfig;
 
   if (service === "HOTMAIL") {
+    console.log('hotmail mailing service')
     transporterConfig = {
       service: service,
       auth: {
@@ -22,6 +23,7 @@ const sendEmail = (
       },
     };
   } else {
+    console.log('not hotmail mailing service')
     transporterConfig = {
       host: host,
       port: port,
