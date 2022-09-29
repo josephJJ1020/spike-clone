@@ -22,11 +22,10 @@ export default function TopNav() {
 
   return (
     <nav className={styles.TopNav}>
-      <div>
-        <Link to="/">
-          <p>Spike Clone</p>
-        </Link>
-      </div>
+      <Link to="/">
+        <p>Spike Clone</p>
+      </Link>
+
       <ul>
         {userData.userId ? (
           <>

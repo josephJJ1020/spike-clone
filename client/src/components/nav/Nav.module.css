@@ -1,41 +1,47 @@
 .Footer {
-    height: 100px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #FFB739;
+  height: 100px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffb739;
 }
 
 .TopNav {
-    display: flex;
-    padding: 0 24px;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #FFB739;
-    height: 64px;
+  display: flex;
+  padding: 0 24px;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffb739;
+  height: 64px;
+}
+
+.TopNav a p {
+  margin: 0 ;
 }
 
 .TopNav ul {
-    display: inline-flex;
-    align-items: center;
-    gap: 20px;
-    height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
 }
 
 .TopNav ul li {
-    height: 100%;
-    display: grid;
-    place-items: center;
+  height: 100%;
+  display: grid;
+  place-items: center;
 }
 
 .transparent .notifIcon {
-    height: 30px;
-    cursor: pointer;
+  height: 30px;
+  cursor: pointer;
 }
 
-.transparent, .transparent:hover, .transparent:focus-within {
-    background-color: transparent;
-    border: none;
-    height: 30%;
+.transparent,
+.transparent:hover,
+.transparent:focus-within {
+  background-color: transparent;
+  border: none;
+  height: 30%;
 }

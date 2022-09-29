@@ -102,14 +102,14 @@ io.on("connection", (socket) => {
           if (!fs.existsSync(`${__dirname}/files/${file.filename}`)) {
             fs.writeFileSync(`${__dirname}/files/${file.filename}`, file.file);
 
-            filesList.push({
-              filename: file.filename,
-              fileLink: `http://localhost:3001/${file.filename}`,
-            });
-
             console.log(`uploaded ${file.filename}`);
             console.log(filesList);
           }
+
+          filesList.push({
+            filename: file.filename,
+            fileLink: `http://localhost:3001/${file.filename}`,
+          });
         } catch (err) {
           console.log(err);
         }
@@ -129,32 +129,33 @@ io.on("connection", (socket) => {
       // set up toEmails array
       let toEmailsArray = [];
 
-      // newConversation.participants.forEach((participant) => {
-      //   if (participant.email !== user.email) {
-      //     toEmailsArray.push(participant.email);
-      //   }
-      // });
+      newConversation.participants.forEach((participant) => {
+        if (participant.email !== user.email) {
+          toEmailsArray.push(participant.email);
+        }
+      });
 
-      // try {
-      //   const mailer = await controller.searchUserForNodemailer(user.email);
-      //   // create email after storing message in database
-      //   console.log(mailer.email)
-      //   console.log(mailer.emailService);
+      try {
+        const mailer = await controller.searchUserForNodemailer(user.email);
+        // create email after storing message in database
+        console.log(mailer.email);
+        console.log(mailer.emailService);
 
-      //   sendMail({
-      //     fromEmail: mailer.email,
-      //     password: mailer.password,
-      //     service: mailer.emailService,
-      //     host: mailer.outboundHost,
-      //     port: mailer.outboundPort,
-      //     toEmails: toEmailsArray,
-      //     subject: subject,
-      //     text: message.content,
-      //   });
-      //   console.log("email sent");
-      // } catch (err) {
-      //   console.log(err);
-      // }
+        sendMail({
+          fromEmail: mailer.email,
+          password: mailer.password,
+          service: mailer.emailService,
+          host: mailer.outboundHost,
+          port: mailer.outboundPort,
+          toEmails: toEmailsArray,
+          subject: subject,
+          text: message.content,
+          files: filesList,
+        });
+        console.log("email sent");
+      } catch (err) {
+        console.log(err);
+      }
 
       onlineUsers.forEach((user) => {
         if (
@@ -233,9 +234,11 @@ io.on("connection", (socket) => {
 
     // if receiver is not online, send callee-offline event to caller
     if (!receiverOnline) {
-      io.to(
-        onlineUsers.find((user) => user.email === data.sender).socketId
-      ).emit("callee-offline", data.receiver);
+      const sender = onlineUsers.find((user) => user.email === data.sender);
+
+      if (sender) {
+        io.to(sender.socketId).emit("callee-offline", data.receiver);
+      }
     }
   });
 

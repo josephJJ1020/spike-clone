@@ -10,6 +10,7 @@ const sendEmail = ({
   toEmails,
   subject = null,
   text,
+  files = []
 }) => {
   let transporterConfig;
 
@@ -41,6 +42,9 @@ const sendEmail = ({
     to: [...toEmails],
     subject: subject,
     text: text,
+    attachments: !files.length ? null : [...files.map(file => {
+      return {filename: file.filename, path: `../server/files/${file.filename}`}
+    })]
   };
 
   transporter.sendMail(mailOptions, function (error, info) {

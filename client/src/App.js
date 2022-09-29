@@ -62,7 +62,9 @@ function App() {
   const userDataSlice = useSelector((state) => state.userData);
   const conversationsSlice = useSelector((state) => state.conversations);
   const globalSlice = useSelector((state) => state.global);
-  const { errMsg, offer, onCall, callType } = useSelector((state) => state.callState);
+  const { errMsg, offer, onCall, callType } = useSelector(
+    (state) => state.callState
+  );
   const dispatch = useDispatch();
 
   const [connected, setConnected] = useState(false);
@@ -119,7 +121,6 @@ function App() {
 
     // when user receives a friend request
     clientSocket.on("friend-request", (data) => {
-
       if (userDataSlice.userData) {
         const newNotifications = [
           ...userDataSlice.userData.notifications,
@@ -144,7 +145,6 @@ function App() {
 
     // receives new array of notifications
     clientSocket.on("accept-friend-request", (data) => {
-
       // check if there is data sent
       if (data) {
         if (userDataSlice.userData) {
@@ -166,7 +166,6 @@ function App() {
 
     // when user's friend request is rejected
     clientSocket.on("reject-friend-request", (data) => {
-
       // check if there is data sent
       if (data) {
         if (userDataSlice.userData) {
@@ -196,7 +195,6 @@ function App() {
           receiver: data.sender,
         });
       } else {
-
         // set remote description and set call states
         await handlePreOffer(clientSocket, data);
         dispatch(setRemoteCaller(data.sender));
@@ -208,7 +206,6 @@ function App() {
 
     // if user is the caller and receives and answer
     clientSocket.on("answer", async (data) => {
-
       // set remote description and set call states
       await acceptAnswer(clientSocket, data);
 
@@ -230,7 +227,6 @@ function App() {
 
     // when user is the caller and user's call request is rejected
     clientSocket.on("reject-offer", (rejecter) => {
-
       // display modal saying that user's call is rejected; set call state
       dispatch(setErrMsg(`${rejecter} rejected your call request.`));
       dispatch(setIsCalling(false));
@@ -238,7 +234,6 @@ function App() {
 
     // when remote connection ends the call
     clientSocket.on("call-ended", (data) => {
-
       // close peer connection; display modal saying remote connection has ended the call; set call states
       dispatch(setErrMsg(`${data.sender} has ended the call.`));
       dispatch(setOnCall(false));
@@ -248,7 +243,6 @@ function App() {
 
     // when user is calling an offline user
     clientSocket.on("callee-offline", (receiver) => {
-
       // set call states; display modal saying remote user is offline
       dispatch(setIsCalling(false));
       dispatch(setErrMsg(`${receiver} is offline`));
@@ -256,7 +250,6 @@ function App() {
 
     // when user calls remote connection but is remote is currently in a call
     clientSocket.on("call-unavailable", (data) => {
-
       // set call states; display modal saying remote is currently unavailable
       dispatch(setIsCalling(false));
       dispatch(setCallee(null));
@@ -282,7 +275,6 @@ function App() {
     };
   }, [userDataSlice, dispatch, conversationsSlice, errMsg, onCall]);
 
-
   // send new message to conversation
   const sendMessage = (message, files) => {
     clientSocket.emit("new-message", {
@@ -295,10 +287,9 @@ function App() {
         content: message,
       },
       convoId: globalSlice.currentConvoId,
-      files: files
+      files: files,
     });
   };
-
 
   // send friend request
   const sendFriendRequest = (requesterId, receiverId) => {
@@ -308,25 +299,20 @@ function App() {
     });
   };
 
-
   // handle friend request
   const friendRequestAction = (data) => {
     clientSocket.emit("friend-request-action", data);
   };
-
 
   // create new conversation (TODO: should take in subject and conversation name as well)
   const createNewConversation = (participants) => {
     clientSocket.emit("create-conversation", participants);
   };
 
-
   // when user starts a video call (only 1 to 1 video call)
   const videoCall = async (receiver) => {
-
     // if statement to avoid sending a call request to self
     if (receiver !== userDataSlice.userData.email) {
-
       // set call states
       dispatch(setCallType("VIDEO"));
       dispatch(setCallee(receiver));
@@ -337,13 +323,10 @@ function App() {
     }
   };
 
-
   // when user starts a voice call (only 1 to 1 voice call)
   const voiceCall = async (receiver) => {
-
     // if statement to avoid sending a call request to self
     if (receiver !== userDataSlice.userData.email) {
-
       // set call states
       dispatch(setCallType("VOICE"));
       dispatch(setCallee(receiver));
@@ -354,10 +337,8 @@ function App() {
     }
   };
 
-
   // initiate call disconnection
   const disconnectFromCall = async (receiver) => {
-
     // send disconnect message to remote
     hangUp(clientSocket, userDataSlice.userData.email, receiver, callType);
 
@@ -367,10 +348,8 @@ function App() {
     dispatch(setCallType(null));
   };
 
-
   // when user wants to accept call offer from remote
   const acceptCall = async (receiver) => {
-
     // set remote description
     await acceptOffer(
       clientSocket,
@@ -382,8 +361,7 @@ function App() {
     dispatch(setOnCall(true));
   };
 
-
-  // 
+  //
   const rejectCall = async (receiver) => {
     await rejectOffer(clientSocket, userDataSlice.userData.email, receiver);
   };
@@ -431,7 +409,7 @@ function App() {
             <Route path="/spike-clone" element={<Navigate to="/" />}></Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>
-          <Footer />
+          {!userDataSlice.userId ? <Footer /> : null}
         </main>
       </Router>
     </AppContext.Provider>

@@ -68,33 +68,26 @@ export const AddConversation = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Conversation name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="conversation name"
-                autoFocus
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Subject (optional)</Form.Label>
               <Form.Control type="text" placeholder="Subject" autoFocus />
             </Form.Group>
-            <div>
-              {participants &&
-                participants.map((participant, index) => (
-                  <Badge key={index}>
-                    {participant.email}
-                    <CloseButtton
-                      onClick={() => removeParticipant(participant.email)}
-                    />
-                  </Badge>
-                ))}
-            </div>
+
             <Form.Group
               className="mb-3"
               controlId="exampleForm.ControlTextarea1"
             >
               <Form.Label>Participants</Form.Label>
+              <div>
+                {participants &&
+                  participants.map((participant, index) => (
+                    <Badge key={index}>
+                      {participant.email}
+                      <CloseButtton
+                        onClick={() => removeParticipant(participant.email)}
+                      />
+                    </Badge>
+                  ))}
+              </div>
               {warning && <p className="text-warning">{warning}</p>}
               <Form.Control as="input" rows={3} {...participant} />
               <Button onClick={addParticipant}>Add participant</Button>

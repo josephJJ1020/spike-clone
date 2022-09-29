@@ -4,7 +4,7 @@
 
 .App-container {
   display: flex;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 64px);
 }
 
 .container {
@@ -37,6 +37,7 @@ a:hover {
   height: 100%;
   width: 75vw;
   background-color: whitesmoke;
+  flex-grow: 1;
 }
 
 .ChatHeader {
@@ -57,6 +58,7 @@ a:hover {
   height: calc(100% - 120px);
   padding: 20px;
   text-align: left;
+  overflow-y: auto;
 }
 
 .MailForm {
@@ -133,7 +135,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 0 12px;
+  /* padding: 0 12px; */
   position: relative;
   z-index: 2;
   cursor: pointer;
@@ -148,10 +150,9 @@ a:hover {
 button,
 input[type="submit"],
 .btn,
-.badge,
 .bg-primary {
+  background-color: #ffb739;
   border: none;
-  background-color: #ffb739 !important;
   color: #9e502f;
 }
 
@@ -160,14 +161,26 @@ input[type="submit"]:hover,
 .btn:hover,
 .badge:hover,
 .bg-primary:hover {
-  transition: background-color .3s;
+  transition: background-color 0.3s;
   border: none;
-  background-color: #ac8137 !important;
+  background-color: #ac8137;
   color: #9e502f;
 }
 
 .badge,
 .bg-primary {
   padding: 12px;
-  margin: 5px;
+  margin: 5px 5px 0 0;
+}
+
+.badge {
+  background-color: #ffb739 !important;
+}
+
+.message {
+  margin-bottom: 30px;
+}
+
+.message p {
+  margin: 0;
 }
