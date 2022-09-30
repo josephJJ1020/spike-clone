@@ -128,13 +128,12 @@ a:hover {
 }
 
 .Contact {
-  width: 100%;
+  max-width: calc(100% - 20px);
   height: 50px;
   /* border: 1px solid gray; */
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
   /* padding: 0 12px; */
   position: relative;
   z-index: 2;

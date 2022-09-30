@@ -283,7 +283,7 @@ function App() {
         email: userDataSlice.userData.email,
       },
       message: {
-        to: globalSlice.receiver, // {id, email}
+        to: [globalSlice.receiver], // {id, email}
         content: message,
       },
       convoId: globalSlice.currentConvoId,

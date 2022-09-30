@@ -89,67 +89,112 @@ class EmailListener {
               return { email: user.address };
             }),
             ...emailToFinal.map((email) => {
-              return { email: email.split(" ")[1].replace(/[<>]/g, "") };
+              /* 
+              
+              error here, because it keeps changing from 
+              
+              mail.headers.to:
+              "joseph.joseph10@outlook.com" <joseph.joseph10@outlook.com>, 
+              "the.josephfernando@gmail.com" <the.josephfernando@gmail.com>
+
+              to 
+
+              mail.headers.to:
+              joseph.joseph10@outlook.com, 
+              joseph_fernando_joseph@yahoo.com
+
+              so in the second scenario, it will say that there is an error
+              on email.split() since each item is the email already and
+              a string like '"the.josephfernando@gmail.com" <the.josephfernando@gmail.com>'
+              
+              */
+
+              // try solution
+              let participantEmail = email.split(" ");
+
+              if (participantEmail.length > 1) {
+                return { email: participantEmail[1].replace(/[<>]/g, "") };
+              } else {
+                return { email: email };
+              }
             }),
           ];
 
           console.log(participants);
+
+          if (mail.attachments) {
+            mail.attachments.forEach(async (file) => {
+              try {
+                if (!fs.existsSync(`../server/files/${file.fileName}`)) {
+                  fs.writeFileSync(
+                    `../server/files/${file.fileName}`,
+                    file.content
+                  );
+
+                  console.log(`uploaded ${file.fileName}`);
+                  console.log(filesList);
+                }
+
+                filesList.push({
+                  filename: file.fileName,
+                  fileLink: `http://localhost:3001/${file.fileName}`,
+                });
+              } catch (err) {
+                console.log(err);
+              }
+            });
+          }
 
           const convo =
             await this.messageController.getConversationByParticipants(
               participants
             ); // this is working
 
-          if (convo) {
-            if (mail.attachments) {
-              mail.attachments.forEach(async (file) => {
-                try {
-                  if (!fs.existsSync(`${__dirname}/files/${file.fileName}`)) {
-                    fs.writeFileSync(
-                      `${__dirname}/files/${file.fileName}`,
-                      file.file
-                    );
-
-                    console.log(`uploaded ${file.fileName}`);
-                    console.log(filesList);
-                  }
-
-                  filesList.push({
-                    filename: file.fileName,
-                    fileLink: `http://localhost:3001/${file.fileName}`,
-                  });
-                } catch (err) {
-                  console.log(err);
-                }
-              });
-            }
-
-            // check if message exists in convo (use id or mail.messagId?)
-            // if it doesn't then add message
-          }
           let newConvo;
-          if (
+
+          // if convo doesn't exist, make new one
+          if (!convo) {
+            console.log('convo not found')
+            newConvo = await this.messageController.addMessage(
+              {
+                email: participants[0].email,
+              },
+              {
+                content: mail.text,
+                to: participants.slice(1),
+              },
+              null,
+              filesList,
+              mail.messageId
+            );
+          }
+
+          // check if message exists in convo (use id or mail.messagId?)
+          // if it doesn't then add message
+          else if (
             !convo.messages.find(
               (message) =>
                 message.id === mail.messageId || message.content === mail.text
             )
           ) {
+            console.log('convo found')
             newConvo = await this.messageController.addMessage(
               {
-                email: this.email,
+                email: participants[0].email,
               },
               {
                 content: mail.text,
               },
               convo._id,
-              filesList
+              filesList,
+              mail.messageId
             );
           }
 
           // lastly, emit new-message event to all online users
           this.onlineUsers.forEach((user) => {
             if (
-              convo.participants.some(
+              newConvo.participants.some(
                 (participant) => participant.email === user.email
               )
             ) {
@@ -157,9 +202,10 @@ class EmailListener {
             }
           });
 
+          // listener works, just need to format text and emit new-message event to user
+
           // NOTE: need to format text because it doesn't return the message only
-          // NOTE: fix mail.headers.to; it works when sender has a name as well but not when only email is provided
-          mail.text.trim();
+          console.log(mail.text.trim());
         })
         .on("end", () => {
           console.log(`${this.email}'s email listener disconnected`);

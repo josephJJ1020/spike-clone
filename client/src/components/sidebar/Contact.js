@@ -53,14 +53,14 @@ export default function Contact({ contact }) {
                   conversation.participants.length < 3
                 ) {
                   found = true;
-                  console.log('found')
+                  console.log("found");
                   dispatch(setCurrentConvoId(conversation._id));
-                  dispatch(setReceiver(null))
+                  dispatch(setReceiver(null));
                 }
               });
 
               if (!found) {
-                console.log('no convo found')
+                console.log("no convo found");
                 dispatch(setCurrentConvoId(null));
                 dispatch(
                   setReceiver({
@@ -69,15 +69,13 @@ export default function Contact({ contact }) {
                   })
                 );
               }
-              
             }
-
           : () => console.log("clicked! not friend")
       }
     >
       <div className={styles.ContactDetails}>
         <div className={styles.onlineCircle}></div>
-        {contact.email}
+        <div className={styles.ContactEmail}>{contact.email}</div>
       </div>
       {!isFriend(contact.id) ? (
         <>

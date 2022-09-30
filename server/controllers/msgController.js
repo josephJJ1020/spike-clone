@@ -14,12 +14,11 @@ const msgController = {
 
   getConversationByParticipants: async (participants) => {
     try {
-      return await Conversation.findOne(
-        { participants: participants },
-
-      );
+      return await Conversation.findOne({
+        participants: { $size: participants.length, $all: participants },
+      });
     } catch (err) {
-      console.log(err.message)
+      console.log(err.message);
     }
   },
 
@@ -40,20 +39,22 @@ const msgController = {
     return Conversation.findById(newConvo._id);
   },
 
-  addMessage: async (user, message, convoId, filesList) => {
+  addMessage: async (user, message, convoId, filesList, messagId = null) => {
     console.log(`filesList in controller: ${filesList}`);
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
       let convo = new Conversation({
-        participants: [message.to, user],
+        participants: [...message.to, user],
         messsages: [],
       });
+
+      await convo.save();
 
       await Conversation.findByIdAndUpdate(convo._id, {
         $push: {
           messages: {
             conversationId: null,
-            id: uuid().slice(0, 6),
+            id: messagId ? messagId : uuid().slice(0, 6),
             from: user,
             content: message.content,
             files: filesList,
@@ -85,7 +86,7 @@ const msgController = {
       ) {
         convo.messages.push({
           conversationId: convo._id,
-          id: uuid().slice(0, 6),
+          id: messagId ? messagId : uuid().slice(0, 6),
           from: user,
           content: message.content,
           files: filesList,

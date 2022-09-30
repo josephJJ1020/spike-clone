@@ -31,7 +31,7 @@ export const AddConversation = () => {
         setWarning("Must enter email");
         return;
       }
-      setParticipants([...participants, { email: `<${participant.value}>` }]);
+      setParticipants([...participants, { email: `${participant.value}` }]);
       setParticipant("");
     }
   };
@@ -124,7 +124,7 @@ export default function AddConversationButton() {
       className="shadow-none"
       onClick={() => dispatch(setCreatingConversation(true))}
     >
-      Add conversation
+      Create conversation
     </Button>
   );
 }

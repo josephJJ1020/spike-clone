@@ -39,10 +39,14 @@
 }
 
 .ContactDetails {
+  width: calc(100% - 40px);
   display: flex;
   align-items: center;
-  gap: 15px;
-  word-wrap: normal;
+  word-wrap: break-word;
+}
+
+.ContactEmail {
+  word-wrap: break-word;
 }
 
 .ContactAction {
