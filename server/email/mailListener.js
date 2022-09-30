@@ -60,6 +60,13 @@ class EmailListener {
           console.log(`${this.email}'s email listener connected`);
         })
         .on("mail", async (mail) => {
+          console.log(`mail date: ${mail.headers.date}`);
+
+          // format text to not include thread replies
+          const content = mail.text
+          .split("________________________________")[0]
+          .replace(/(\r\n|\n|\r)/gm, "")
+
           // upload files from mail.attachments first before adding the message
           let filesList = [];
 
@@ -154,13 +161,13 @@ class EmailListener {
 
           // if convo doesn't exist, make new one
           if (!convo) {
-            console.log('convo not found')
+            console.log("convo not found");
             newConvo = await this.messageController.addMessage(
               {
                 email: participants[0].email,
               },
               {
-                content: mail.text,
+                content: content,
                 to: participants.slice(1),
               },
               null,
@@ -174,16 +181,16 @@ class EmailListener {
           else if (
             !convo.messages.find(
               (message) =>
-                message.id === mail.messageId || message.content === mail.text
+                message.id === mail.messageId || message.content === content
             )
           ) {
-            console.log('convo found')
+            console.log("convo found");
             newConvo = await this.messageController.addMessage(
               {
                 email: participants[0].email,
               },
               {
-                content: mail.text,
+                content: content,
               },
               convo._id,
               filesList,
@@ -198,6 +205,7 @@ class EmailListener {
                 (participant) => participant.email === user.email
               )
             ) {
+              console.log("sending new-message event to online user");
               this.socket.to(user.socketId).emit("new-message", newConvo);
             }
           });
@@ -205,7 +213,9 @@ class EmailListener {
           // listener works, just need to format text and emit new-message event to user
 
           // NOTE: need to format text because it doesn't return the message only
-          console.log(mail.text.trim());
+        })
+        .on("error", (err) => {
+          console.log(err.message);
         })
         .on("end", () => {
           console.log(`${this.email}'s email listener disconnected`);
