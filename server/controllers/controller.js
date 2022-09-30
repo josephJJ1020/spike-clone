@@ -64,7 +64,7 @@ const controller = {
         const user = await User.findOne({
           email: email,
           password: password, // uses plaintext password currently for nodemailer testing
-        });
+        }, {password: 0});
 
         console.log(user);
 
@@ -91,7 +91,7 @@ const controller = {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          password: user.password, // encrypt password when returned
+          // password: user.password, // encrypt password when returned
           friends: user.friends,
         };
       } catch (err) {
