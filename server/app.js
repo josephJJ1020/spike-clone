@@ -42,7 +42,9 @@ io.on("connection", (socket) => {
     // init user's email listener
   });
 
+  // add user to onlineUsers array on connection
   socket.on("user-connection", async (data) => {
+    // check if user data is sent
     if (data.id) {
       onlineUsers.push({
         id: data.id,
@@ -52,6 +54,12 @@ io.on("connection", (socket) => {
       // emit new list of online users to every user; user will then add online users list to their online users list in the frontend
       io.sockets.emit("onlineUsers", onlineUsers);
 
+      // update onlineUsers for each email listener in emailListeners array
+      emailListeners.forEach((listener) => {
+        listener.setOnlineUsers(onlineUsers);
+      });
+
+      // add user's email listener to emailListeners array in case it doesn't exist yet
       const listener = emailListeners.find(
         (listener) => listener.email === data.email
       );
@@ -78,6 +86,37 @@ io.on("connection", (socket) => {
             listener.setOnlineUsers(onlineUsers);
           });
         }
+      }
+    }
+  });
+
+  // add user's email listener to emailListeners array on login
+  socket.on("login", async (data) => {
+    const listener = emailListeners.find(
+      (listener) => listener.email === data.email
+    );
+
+    if (!listener) {
+      const user = await controller.searchUserForNodemailer(data.email);
+
+      if (user) {
+        console.log(user);
+        const emailListener = new EmailListener(
+          user.email,
+          user.password,
+          user.inboundHost,
+          user.inboundPort,
+          io,
+          onlineUsers
+        );
+
+        emailListeners.push(emailListener);
+        emailListener.init();
+        emailListener.start();
+
+        emailListeners.forEach((listener) => {
+          listener.setOnlineUsers(onlineUsers);
+        });
       }
     }
   });
@@ -316,20 +355,35 @@ io.on("connection", (socket) => {
   socket.on("logout", (data) => {
     //note: only start mail user's mail listener on "login" event sent after user logs in/signs up
     // or maybe just keep it running forever
+
     // stop and remove user's email listener from emailListeners array
     const emailListener = emailListeners.find(
       (listener) => listener.email === data.email
     );
-    emailListener.close();
-    emailListeners = emailListeners.filter(
-      (listener) => listener.email !== emailListener.email
-    );
-  });
-  socket.on("disconnect", () => {
-    const user = onlineUsers.find((user) => user.socketId === socket.id);
 
-    // remove user from onlineUsers array
-    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+    if (emailListener) {
+      emailListener.close();
+      emailListeners = emailListeners.filter(
+        (listener) => listener.email !== emailListener.email
+      );
+    }
+  });
+
+  // remove user from onlineUsers array on disconnect
+  socket.on("disconnect", () => {
+    const onlineUser = onlineUsers.find((user) => user.socketId === socket.id);
+
+    if (onlineUser) {
+      onlineUsers = onlineUsers.filter(
+        (user) => user.socketId !== onlineUser.socketId
+      );
+    }
+
+    // update onlineUsers for each email listener in emailListeners array
+
+    emailListeners.forEach((listener) => {
+      listener.setOnlineUsers(onlineUsers);
+    });
   });
 });
 

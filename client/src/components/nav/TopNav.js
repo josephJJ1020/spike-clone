@@ -42,7 +42,7 @@ export default function TopNav() {
                   />
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu>
+                <Dropdown.Menu style={{padding: '12px', maxHeight: '300px'}}>
                   {userData.userData.notifications &&
                   userData.userData.notifications.length ? (
                     userData.userData.notifications.map((notif, index) => {

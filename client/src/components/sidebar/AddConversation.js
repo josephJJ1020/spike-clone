@@ -31,7 +31,7 @@ export const AddConversation = () => {
         setWarning("Must enter email");
         return;
       }
-      setParticipants([...participants, { email: participant.value }]);
+      setParticipants([...participants, { email: `<${participant.value}>` }]);
       setParticipant("");
     }
   };
@@ -89,7 +89,7 @@ export const AddConversation = () => {
                   ))}
               </div>
               {warning && <p className="text-warning">{warning}</p>}
-              <Form.Control as="input" rows={3} {...participant} />
+              <Form.Control as="input" rows={3} {...participant} placeholder="Enter participant's email"/>
               <Button onClick={addParticipant}>Add participant</Button>
             </Form.Group>
           </Form>

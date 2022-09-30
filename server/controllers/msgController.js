@@ -12,11 +12,11 @@ const msgController = {
     return await Conversation.find({ "participants.email": email });
   },
 
-  getConversationIdByParticipants: async (participants) => {
+  getConversationByParticipants: async (participants) => {
     try {
-      return await Conversation.find(
+      return await Conversation.findOne(
         { participants: participants },
-        { _id: 1 }
+
       );
     } catch (err) {
       console.log(err.message)
