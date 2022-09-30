@@ -79,11 +79,16 @@ class EmailListener {
             }
           ]
           */
+          console.log(`mail.headers.to:`);
+          console.log(mail.headers.to);
+          const emailTo = mail.headers.to.split(",");
+          const emailToFinal = emailTo.length < 2 ? [mail.headers.to] : emailTo;
+
           const participants = [
             ...mail.from.map((user) => {
               return { email: user.address };
             }),
-            ...mail.headers.to.split(",").map((email) => {
+            ...emailToFinal.map((email) => {
               return { email: email.split(" ")[1].replace(/[<>]/g, "") };
             }),
           ];
@@ -148,14 +153,13 @@ class EmailListener {
                 (participant) => participant.email === user.email
               )
             ) {
-              this.socket
-                .to(user.socketId)
-                .emit("new-message", newConvo);
+              this.socket.to(user.socketId).emit("new-message", newConvo);
             }
           });
 
           // NOTE: need to format text because it doesn't return the message only
-          mail.text.trim()
+          // NOTE: fix mail.headers.to; it works when sender has a name as well but not when only email is provided
+          mail.text.trim();
         })
         .on("end", () => {
           console.log(`${this.email}'s email listener disconnected`);
