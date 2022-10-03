@@ -53,14 +53,12 @@ export default function Contact({ contact }) {
                   conversation.participants.length < 3
                 ) {
                   found = true;
-                  console.log("found");
                   dispatch(setCurrentConvoId(conversation._id));
                   dispatch(setReceiver(null));
                 }
               });
 
               if (!found) {
-                console.log("no convo found");
                 dispatch(setCurrentConvoId(null));
                 dispatch(
                   setReceiver({
@@ -70,7 +68,7 @@ export default function Contact({ contact }) {
                 );
               }
             }
-          : () => console.log("clicked! not friend")
+          : null
       }
     >
       <div className={styles.ContactDetails}>

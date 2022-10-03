@@ -39,7 +39,14 @@ const msgController = {
     return Conversation.findById(newConvo._id);
   },
 
-  addMessage: async (user, message, convoId, filesList, messagId = null) => {
+  addMessage: async (
+    user,
+    message,
+    convoId,
+    filesList,
+    messagId = null,
+    dateCreated
+  ) => {
     console.log(`filesList in controller: ${filesList}`);
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
@@ -58,18 +65,11 @@ const msgController = {
             from: user,
             content: message.content,
             files: filesList,
-            dateCreated: Date.now(),
+            dateCreated: dateCreated ? dateCreated : Date.now(),
           },
         },
-      });
+      }).sort({ dateCreated: 1 });
 
-      // convo.messages.push({
-      //   conversationId: null,
-      //   id: uuid().slice(0, 6),
-      //   from: user,
-      //   content: message.content,
-      //   dateCreated: Date.now(),
-      // });
       await convo.save();
 
       return convo;
@@ -84,16 +84,21 @@ const msgController = {
           (participant) => participant.email === user.email
         )
       ) {
-        convo.messages.push({
-          conversationId: convo._id,
-          id: messagId ? messagId : uuid().slice(0, 6),
-          from: user,
-          content: message.content,
-          files: filesList,
-          dateCreated: Date.now(),
-        });
+        await Conversation.findByIdAndUpdate(convo._id, {
+          $push: {
+            messages: {
+              conversationId: convo._id,
+              id: messagId ? messagId : uuid().slice(0, 6),
+              from: user,
+              content: message.content,
+              files: filesList,
+              dateCreated: dateCreated ? dateCreated : Date.now(),
+            },
+          },
+        }).sort({ dateCreated: 1 });
 
-        convo.save();
+        await convo.save();
+
         return convo;
       } else {
         return new Error("User is not in Conversation");

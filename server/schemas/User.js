@@ -66,6 +66,16 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+
+  lastFetched: {
+    type: Number,
+    default: Date.now(),
+  },
+
+  appPassword: {
+    type: String,
+    default: null
+  }
 });
 
 module.exports = UserSchema;

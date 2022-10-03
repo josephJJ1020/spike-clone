@@ -37,7 +37,6 @@ export const AddConversation = () => {
   };
 
   const removeParticipant = (email) => {
-    console.log("clicked!");
     setParticipants(participants.filter((user) => user.email !== email));
   };
 

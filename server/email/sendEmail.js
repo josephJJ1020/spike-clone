@@ -15,7 +15,6 @@ const sendEmail = ({
   let transporterConfig;
 
   if (service === "HOTMAIL") {
-    console.log("hotmail mailing service");
     transporterConfig = {
       service: service,
       auth: {
@@ -24,7 +23,6 @@ const sendEmail = ({
       },
     };
   } else {
-    console.log("not hotmail mailing service");
     transporterConfig = {
       host: host,
       port: port,

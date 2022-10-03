@@ -7,6 +7,7 @@ const { controller, User } = require("./controllers/controller");
 const msgController = require("./controllers/msgController");
 const EmailListener = require("./email/mailListener");
 const sendMail = require("./email/sendEmail");
+const fetchEmail = require("./email/fetchEmail");
 
 const mongoose = require("mongoose");
 
@@ -68,7 +69,30 @@ io.on("connection", (socket) => {
         const user = await controller.searchUserForNodemailer(data.email);
 
         if (user) {
-          console.log(user);
+          // fetch user's existing emails and represent them as conversations
+          try {
+            let password;
+
+            if (user.emailService === "GMAIL") {
+              password = user.appPassword;
+            } else {
+              password = user.password;
+            }
+            await fetchEmail(
+              user.email,
+              password,
+              user.inboundHost,
+              user.inboundPort,
+              0, // within last ten days
+              user.lastFetched,
+              io,
+              onlineUsers
+            );
+          } catch (err) {
+            console.log(err.message);
+          }
+
+
           const emailListener = new EmailListener(
             user.email,
             user.password,
@@ -80,7 +104,7 @@ io.on("connection", (socket) => {
 
           emailListeners.push(emailListener);
           emailListener.init();
-          emailListener.start();
+          await emailListener.start();
 
           emailListeners.forEach((listener) => {
             listener.setOnlineUsers(onlineUsers);
@@ -100,7 +124,6 @@ io.on("connection", (socket) => {
       const user = await controller.searchUserForNodemailer(data.email);
 
       if (user) {
-        console.log(user);
         const emailListener = new EmailListener(
           user.email,
           user.password,
@@ -157,12 +180,6 @@ io.on("connection", (socket) => {
   socket.on(
     "new-message",
     async ({ user, message, convoId, subject = null, files }) => {
-      console.log(`user email: ${user.email}`);
-
-      console.log(files);
-
-      // note: store file names as well, not just the buffer, in the frontend
-      // so it can be used for the file upload path name (done)
 
       let filesList = [];
 
@@ -171,9 +188,6 @@ io.on("connection", (socket) => {
         try {
           if (!fs.existsSync(`${__dirname}/files/${file.filename}`)) {
             fs.writeFileSync(`${__dirname}/files/${file.filename}`, file.file);
-
-            console.log(`uploaded ${file.filename}`);
-            console.log(filesList);
           }
 
           filesList.push({
@@ -192,10 +206,21 @@ io.on("connection", (socket) => {
         user,
         message,
         convoId,
-        filesList
+        filesList,
+        null,
+        null
       );
 
-      console.log(`filesList: ${filesList}`);
+      onlineUsers.forEach((user) => {
+        if (
+          newConversation.participants.some(
+            (participant) => participant.email === user.email
+          )
+        ) {
+          io.to(user.socketId).emit("new-message", newConversation);
+        }
+      });
+
       // set up toEmails array
       let toEmailsArray = [];
 
@@ -208,8 +233,6 @@ io.on("connection", (socket) => {
       try {
         const mailer = await controller.searchUserForNodemailer(user.email);
         // create email after storing message in database
-        console.log(mailer.email);
-        console.log(mailer.emailService);
 
         sendMail({
           fromEmail: mailer.email,
@@ -222,27 +245,12 @@ io.on("connection", (socket) => {
           text: message.content,
           files: filesList,
         });
-        console.log("email sent");
       } catch (err) {
         console.log(err);
       }
 
-      onlineUsers.forEach((user) => {
-        if (
-          newConversation.participants.some(
-            (participant) => participant.email === user.email
-          )
-        ) {
-          
-          io.to(user.socketId).emit("new-message", newConversation);
-        }
-      });
-
       // participant will then add this new convo to conversations list in the frontend
-      console.log('added msg to database')
     }
-
-    
   );
 
   // takes in receiverId, requesterId
@@ -395,14 +403,14 @@ io.on("connection", (socket) => {
 
 // user signup
 app.post("/signup", async (req, res) => {
-  console.log(req.body);
   if (!req.body || req.body === undefined) {
-    return res.send(new Error("No signup credentials specified"));
+    return res.status(409).send("Incomplete signup credentials.");
   }
 
   let {
     email,
     password,
+    appPassword,
     emailService,
     inboundHost,
     inboundPort,
@@ -411,16 +419,17 @@ app.post("/signup", async (req, res) => {
   } = req.body;
 
   if (!email || !password || !emailService || !inboundHost || !inboundPort) {
-    console.log("error");
     return res.send(new Error("Please complete signup credentials"));
   }
 
   try {
     let newUser;
     if (outboundHost || outboundHost.length) {
+      // non-hotmail service
       newUser = await controller.createUser({
         email,
         password,
+        appPassword,
         emailService,
         inboundHost,
         inboundPort: parseInt(inboundPort),
@@ -429,6 +438,7 @@ app.post("/signup", async (req, res) => {
       });
     } else {
       newUser = await controller.createUser({
+        // hotmail service
         email,
         password,
         emailService,
@@ -437,7 +447,6 @@ app.post("/signup", async (req, res) => {
       });
     }
 
-    console.log(newUser);
     return res.send(newUser);
   } catch (err) {
     console.log(err.message);
@@ -448,7 +457,7 @@ app.post("/signup", async (req, res) => {
 // user login
 app.post("/login", async (req, res) => {
   if (!req.body) {
-    return res.send(new Error("No ID, email, or password specified"));
+    return res.status(409).send("Incomplete credentials.");
   }
 
   let { id, email, password } = req.body;
@@ -466,7 +475,6 @@ app.post("/login", async (req, res) => {
   } else if (email && password) {
     try {
       const userData = await controller.searchUser({ email, password });
-      console.log(`found user: ${userData.email}`);
       if (userData) {
         return res.send(userData);
       } else {

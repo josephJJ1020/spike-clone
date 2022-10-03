@@ -34,7 +34,6 @@ export const Calling = () => {
         <Button
           variant="danger"
           onClick={() => {
-            console.log("cancel call");
             dispatch(setIsCalling(false));
           }}
         >

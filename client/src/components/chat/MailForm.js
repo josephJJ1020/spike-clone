@@ -17,7 +17,6 @@ export default function MailForm({ participants, receiverEmail }) {
     event.preventDefault();
 
     if (message.value.length) {
-      console.log(uploadedFiles);
 
       sendMessage(
         message.value,
@@ -55,7 +54,6 @@ export default function MailForm({ participants, receiverEmail }) {
             className={styles.callButton}
             type="button"
             onClick={() => {
-              console.log("making video call");
               videoCall(receiverEmail);
             }}
           >
@@ -65,7 +63,6 @@ export default function MailForm({ participants, receiverEmail }) {
             className={styles.callButton}
             type="button"
             onClick={() => {
-              console.log("making video call");
               voiceCall(receiverEmail);
             }}
           >

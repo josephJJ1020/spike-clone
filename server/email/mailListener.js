@@ -49,7 +49,6 @@ class EmailListener {
 
   init() {
     this.#imapConfig = this.#setImapConfig(this.#initImapConfig());
-    console.log(this.#getInboundHost());
     return (this.listener = notifier);
   }
 
@@ -60,14 +59,10 @@ class EmailListener {
           console.log(`${this.email}'s email listener connected`);
         })
         .on("mail", async (mail) => {
-          console.log(`mail date: ${mail.headers.date}`);
-
           // format text to not include thread replies
           const content = mail.text
             .split("________________________________")[0]
             .replace(/(\r\n|\n|\r)/gm, "");
-
-          console.log(`mail message ${content}`);
 
           // upload files from mail.attachments first before adding the message
           let filesList = [];
@@ -90,8 +85,6 @@ class EmailListener {
             }),
           ];
 
-          console.log(participants);
-
           if (mail.attachments) {
             mail.attachments.forEach(async (file) => {
               try {
@@ -100,9 +93,6 @@ class EmailListener {
                     `../server/files/${file.fileName}`,
                     file.content
                   );
-
-                  console.log(`uploaded ${file.fileName}`);
-                  console.log(filesList);
                 }
 
                 filesList.push({
@@ -123,7 +113,6 @@ class EmailListener {
 
           // if convo doesn't exist, make new one
           if (!convo) {
-            console.log("convo not found");
             newConvo = await this.messageController.addMessage(
               {
                 email: participants[0].email,
@@ -134,7 +123,8 @@ class EmailListener {
               },
               null,
               filesList,
-              mail.messageId
+              mail.messageId,
+              Date.parse(mail.headers.date)
             );
           }
 
@@ -147,8 +137,8 @@ class EmailListener {
             )
           ) {
             console.log("message already exists");
+            return
           } else {
-            console.log("new email!");
             newConvo = await this.messageController.addMessage(
               {
                 email: participants[0].email,
@@ -158,25 +148,21 @@ class EmailListener {
               },
               convo._id,
               filesList,
-              mail.messageId
+              mail.messageId,
+              Date.parse(mail.headers.date)
             );
 
-            console.log(`newConvo id: ${newConvo._id}`);
-
             // lastly, emit new-message event to all online users
-
-            this.onlineUsers.forEach((user) => {
-              if (
-                newConvo.participants.some(
-                  (participant) => participant.email === user.email
-                )
-              ) {
-                console.log("sending new-message event to online user");
-                this.socket.to(user.socketId).emit("new-message", newConvo);
-              }
-            });
           }
-
+          this.onlineUsers.forEach((user) => {
+            if (
+              newConvo.participants.some(
+                (participant) => participant.email === user.email
+              )
+            ) {
+              this.socket.to(user.socketId).emit("new-message", newConvo);
+            }
+          });
           // listener works, just need to format text and emit new-message event to user
 
           // NOTE: need to format text because it doesn't return the message only

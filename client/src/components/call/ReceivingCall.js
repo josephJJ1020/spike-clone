@@ -47,7 +47,6 @@ export const ReceivingCall = () => {
         <Button
           variant="danger"
           onClick={() => {
-            console.log("cancel call");
             rejectCall(remoteCaller);
             dispatch(setReceivingOffer(false));
             // emit cancel call event

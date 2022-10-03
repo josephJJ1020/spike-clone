@@ -72,7 +72,6 @@ function App() {
   useEffect(() => {
     // set socket listeners
     clientSocket.on("connect", () => {
-      console.log("connected!");
       setConnected(true);
     });
 

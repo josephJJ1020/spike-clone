@@ -24,16 +24,17 @@ export default function SignUp() {
   const signUp = async (
     email,
     password,
+    appPassword,
     emailService,
     inboundHost,
     inboundPort,
     outboundHost,
     outboundPort
   ) => {
-    console.log(password);
     const userData = await getAuth({
       email: email,
       password: password,
+      appPassword: appPassword,
       emailService: emailService,
       inboundHost: inboundHost,
       inboundPort: inboundPort,
@@ -56,17 +57,16 @@ export default function SignUp() {
   };
 
   const submit = (e) => {
-    console.log("submitted");
     e.preventDefault();
     var trimmedEmail = email.value.replace(/\s/g, ""),
       trimmedPw = pw.value.replace(/\s/g, ""),
+      trimmedAppPw = appPw.value.replace(/\s/g, ""),
       trimmedEmailService = emailService.value.replace(/\s/g, ""),
       trimmedInboundHost = inboundHost.value.replace(/\s/g, ""),
       trimmedInboundPort = inboundPort.value.replace(/\s/g, ""),
       trimmedOutboundHost = outboundHost.value.replace(/\s/g, ""),
       trimmedOutboundPort = outboundPort.value.replace(/\s/g, "");
 
-    console.log(trimmedInboundHost);
     if (!trimmedEmail.length) {
       dispatch(
         setFlashMsg({ type: "error", message: "Email must not be empty" })
@@ -104,12 +104,20 @@ export default function SignUp() {
         })
       );
       return;
+    } else if (trimmedEmailService === "GMAIL" && !trimmedAppPw) {
+      dispatch(
+        setFlashMsg({
+          type: "error",
+          message: "Please provide app password",
+        })
+      );
+      return;
     }
 
-    console.log(trimmedPw);
     signUp(
       trimmedEmail,
       trimmedPw,
+      trimmedAppPw,
       trimmedEmailService,
       trimmedInboundHost,
       trimmedInboundPort,
@@ -118,6 +126,7 @@ export default function SignUp() {
     );
     setEmail("");
     setPw("");
+    setAppPw("");
     setEmailService("HOTMAIL");
     setInboundHost("");
     setInboundPort(null);

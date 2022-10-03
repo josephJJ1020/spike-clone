@@ -9,6 +9,7 @@ const controller = {
   createUser: async ({
     email,
     password,
+    appPassword,
     emailService,
     inboundHost,
     inboundPort,
@@ -32,24 +33,22 @@ const controller = {
       email,
       password,
       emailService,
+      appPassword,
       inboundHost,
       inboundPort,
       outboundHost,
       outboundPort,
     });
-    console.log(newUser);
 
     try {
       // not saving
       // save user and return user data
       await newUser.save();
       const user = await User.findOne({ email: email });
-      console.log(`new user _id: ${user._id}`);
       if (user) {
         return user;
       }
     } catch (err) {
-      // it's going to here
       console.log(err.message);
       return new Error("Failed to create new user");
     }
@@ -57,27 +56,26 @@ const controller = {
 
   // searchUser method used for login
   searchUser: async ({ id, email, password }) => {
-    console.log(`login email: ${email}`)
-    console.log(`login password: ${password}`)
     if (email && password) {
       try {
-        const user = await User.findOne({
-          email: email,
-          password: password, // uses plaintext password currently for nodemailer testing
-        }, {password: 0});
-
-        console.log(user);
+        const user = await User.findOne(
+          {
+            email: email,
+            password: password, // uses plaintext password currently for nodemailer testing
+          },
+          { password: 0 }
+        );
 
         if (user) {
           // hashing omitted for nodemailer testing
           // const match = await comparePasswords(password, user.password);
-          // console.log(match);
+
           // if (match) {
           //   return user;
           // } else {
           //   console.log(`passwords don't match`);
           // }
-          return user
+          return user;
         }
       } catch (err) {
         // console.log(err)
@@ -102,22 +100,17 @@ const controller = {
 
   searchUserForNodemailer: async (email) => {
     try {
-      return await User.findOne({email: email})
+      return await User.findOne({ email: email });
     } catch (err) {
-      console.log(err.message)
+      console.log(err.message);
     }
   },
   // handles sent friend requests
   sendFriendRequest: async (requesterId, receiverId) => {
-    console.log(`requesterId: ${requesterId}`);
-    console.log(`receiverId: ${receiverId}`);
     if (requesterId && receiverId) {
       try {
         const sender = await User.findById(requesterId);
         const requestTo = await User.findById(receiverId);
-
-        console.log(`sender: ${sender}`);
-        console.log(`receiver: ${requestTo}`);
 
         const friendRequest = {
           id: uuid().slice(0, 6),
@@ -144,10 +137,8 @@ const controller = {
 
   // at this point, the sender is the one answering the friend request, so the notification belongs to the sender
   handleFriendRequest: async ({ id, type, sender, receiver }) => {
-    console.log(`notif id: ${id}`);
     try {
       const user = await User.findById(sender);
-      console.log(user.notifications);
       if (type === "ACCEPT") {
         const notif = user.notifications.find((n) => n.id === id);
 
@@ -184,24 +175,18 @@ const controller = {
               friends: user.friends,
               notifications: user.notifications,
             },
-            // senderNotifs: requestSender.notifications,
-            // accepterNotifs: user.notifications,
           };
         } else {
-          console.log("cant find notif");
+          console.log("Unable to find notification");
         }
       } else if (type === "REJECT") {
         // delete friend request from user's notifications list
-        console.log(`sent id: ${id}`);
         const newNotifications = user.notifications.filter(
           (notif) => notif.id !== id
         );
-        console.log(`new notifications: ${newNotifications}`);
-        console.log("friend request rejected");
 
         // not setting proper notifications (rejected notification still pending, should be removed)
         user.notifications = newNotifications;
-        console.log(user.notifications);
         await user.save();
 
         return {
@@ -212,6 +197,14 @@ const controller = {
         };
       }
     } catch (err) {}
+  },
+
+  setUserLastFetched: async (email, date) => {
+    try {
+      await User.updateOne({ email: email }, { lastFetched: date });
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
 

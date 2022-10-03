@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 
 import styles from "./Chat.module.css";
 import cat from "../../images/cat.png";
+import { useEffect } from "react";
 
 export default function Chat() {
   const global = useSelector((state) => state.global);
@@ -16,6 +17,9 @@ export default function Chat() {
   const currentConversation = global.currentConvoId
     ? conversations.find((convo) => convo._id === global.currentConvoId)
     : null;
+
+  useEffect(() => {
+  }, [currentConversation])
 
   return (
     <section className="Chat">

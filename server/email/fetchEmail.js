@@ -1,16 +1,21 @@
 const Imap = require("imap");
+const msgController = require("../controllers/msgController");
+const { controller: userController } = require("../controllers/controller");
+const fs = require("fs");
 
 const { simpleParser } = require("mailparser");
 
 require("dotenv").config();
 
-const fetchEmailFromTo = (
+const fetchEmailFromTo = async (
   email,
   password,
   inboundHost,
   inboundPort,
   fromDate,
-  toDate
+  toDate,
+  socket,
+  onlineUsers
 ) => {
   const imapConfig = {
     user: email,
@@ -27,31 +32,129 @@ const fetchEmailFromTo = (
         imap.openBox("INBOX", false, () => {
           imap.search(
             [
-              ["SINCE", fromDate],
-              ["BEFORE", toDate],
+              // ["SINCE", fromDate],
+              // ["SENTBEFORE", Date.now()],
+              ["ALL"]
             ],
             (err, results) => {
               const f = imap.fetch(results, { bodies: "" });
               f.on("message", (msg) => {
                 msg.on("body", (stream) => {
                   simpleParser(stream, async (err, parsed) => {
+                    if (err) console.log(err.message);
                     //   const {from, subject, textAsHtml, text} = parsed;
-                    const { headers, from, to, text } = parsed;
-                    console.log(headers.get("message-id"));
-                    console.log(from);
-                    console.log(to);
-                    console.log(text);
-                    /* Make API call to save the data
-                       Save the retrieved data into a database.
-                       E.t.c
-                    */
-                  });
-                });
-                msg.once("attributes", (attrs) => {
-                  const { uid } = attrs;
-                  imap.addFlags(uid, ["\\Seen"], () => {
-                    // Mark the email as read after reading it
-                    console.log("Marked as read!");
+                    const { headers, from, to, text, attachments } = parsed;
+
+                    // format text to not include thread replies
+                    const content = text
+                      ? text
+                          .split("________________________________")[0]
+                          .replace(/(\r\n|\n|\r)/gm, "")
+                      : "";
+
+                    // upload files from mail.attachments first before adding the message
+                    let filesList = [];
+                    const headersTo = [...to.value];
+
+                    const participants = [
+                      ...from.value.map((user) => {
+                        return { email: user.address };
+                      }),
+                      ...headersTo.map((user) => {
+                        return { email: user.address };
+                      }),
+                    ];
+
+                    if (attachments) {
+                      attachments.forEach(async (file) => {
+                        try {
+                          if (
+                            !fs.existsSync(`../server/files/${file.filename}`)
+                          ) {
+                            fs.writeFileSync(
+                              `../server/files/${file.filename}`,
+                              file.content
+                            );
+                          }
+
+                          filesList.push({
+                            filename: file.filename,
+                            fileLink: `http://localhost:3001/${file.filename}`,
+                          });
+                        } catch (err) {
+                          console.log(err);
+                        }
+                      });
+                    }
+                    let newConvo;
+
+                    const convo =
+                      await msgController.getConversationByParticipants(
+                        participants
+                      ); // this is working
+
+                    // if convo doesn't exist, make new one
+                    if (!convo) {
+                      newConvo = await msgController.addMessage(
+                        {
+                          email: participants[0].email,
+                        },
+                        {
+                          content: content,
+                          to: participants.slice(1),
+                        },
+                        null,
+                        filesList,
+                        headers.get("message-id"),
+                        Date.parse(headers.get("date"))
+                      );
+                    }
+
+                    // check if message exists in convo (use id or mail.messagId?)
+                    // if it doesn't then add message
+                    else if (
+                      convo.messages.find(
+                        (message) =>
+                          message.id === headers.get("message-id") ||
+                          message.content === content
+                      )
+                    ) {
+                      console.log("message already exists");
+                    } else {
+                      newConvo = await msgController.addMessage(
+                        {
+                          email: participants[0].email,
+                        },
+                        {
+                          content: content,
+                        },
+                        convo._id,
+                        filesList,
+                        headers.get("message-id"),
+                        Date.parse(headers.get("date"))
+                      );
+
+                      console.log(`newConvo id: ${newConvo._id}`);
+
+                      // lastly, emit new-message event to all online users
+
+                      onlineUsers.forEach((user) => {
+                        if (
+                          newConvo.participants.some(
+                            (participant) => participant.email === user.email
+                          )
+                        ) {
+                          socket
+                            .to(user.socketId)
+                            .emit("new-message", newConvo);
+                        }
+                      });
+                    }
+
+                    await userController.setUserLastFetched(
+                      email,
+                      Date.parse(headers.get("date"))
+                    );
                   });
                 });
               });

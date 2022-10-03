@@ -50,6 +50,7 @@ export default function Mails({ currentConversation }) {
                     );
                   })}
               </section>
+              <p>{new Date(message.dateCreated).toISOString()}</p>
             </section>
           );
         })
