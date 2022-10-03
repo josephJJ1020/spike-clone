@@ -1,0 +1,88 @@
+.LandingPageSection {
+  height: 100vh;
+  color: black;
+}
+
+.LandingPage h1 {
+  font-size: 5rem;
+}
+
+#Home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  /* color: #ffb739; */
+  flex-direction: column;
+  gap: 20px;
+  overflow: auto;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+#Home::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: -1;
+
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("./email_background.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.About {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.Left {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding-left: 50px;
+    gap: 30px;
+}
+
+.Right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.Right img {
+    max-width: 400px;
+}
+
+.ConversationalEmail {
+    background-color: #ffb739;
+    padding: 30px 50px;
+    position: relative;
+}
+
+.ConversationalEmail img {
+    max-height: 70%;
+    max-width: 80%;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.CreateAccount {
+    display: flex;
+    height: 50vh;
+    align-items: center;
+}
+
+.CreateAccount section {
+    width: 50%;
+}

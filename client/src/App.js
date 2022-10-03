@@ -53,6 +53,7 @@ import {
   setCallType,
   setAccepted,
 } from "./store/slices/callStateSlice";
+import { LandingPage } from "./components/home/LandingPage";
 
 // create socket
 const clientSocket = io("http://localhost:3001");
@@ -81,7 +82,9 @@ function App() {
       ); // should be an array of user objects with id and socketId
     });
 
-    clientSocket.on("disconnect", () => {});
+    clientSocket.on("disconnect", () => {
+      setConnected(false)
+    });
 
     if (userDataSlice.userData) {
       clientSocket.emit("user-connection", {
@@ -394,7 +397,7 @@ function App() {
             <Route
               path="/"
               element={
-                userDataSlice.userId ? <HomePage /> : <Navigate to="/login" />
+                userDataSlice.userId ? <HomePage /> : <LandingPage/>
               }
             />
             <Route
