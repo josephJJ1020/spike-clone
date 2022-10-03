@@ -239,7 +239,10 @@ io.on("connection", (socket) => {
       });
 
       // participant will then add this new convo to conversations list in the frontend
+      console.log('added msg to database')
     }
+
+    
   );
 
   // takes in receiverId, requesterId

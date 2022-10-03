@@ -12,6 +12,7 @@ export default function SignUp() {
 
   const [email, setEmail] = useInput("");
   const [pw, setPw] = useInput("");
+  const [appPw, setAppPw] = useInput("");
 
   const [emailService, setEmailService] = useInput("HOTMAIL");
 
@@ -29,7 +30,7 @@ export default function SignUp() {
     outboundHost,
     outboundPort
   ) => {
-    console.log(password)
+    console.log(password);
     const userData = await getAuth({
       email: email,
       password: password,
@@ -55,7 +56,7 @@ export default function SignUp() {
   };
 
   const submit = (e) => {
-    console.log('submitted')
+    console.log("submitted");
     e.preventDefault();
     var trimmedEmail = email.value.replace(/\s/g, ""),
       trimmedPw = pw.value.replace(/\s/g, ""),
@@ -65,7 +66,7 @@ export default function SignUp() {
       trimmedOutboundHost = outboundHost.value.replace(/\s/g, ""),
       trimmedOutboundPort = outboundPort.value.replace(/\s/g, "");
 
-      console.log(trimmedInboundHost)
+    console.log(trimmedInboundHost);
     if (!trimmedEmail.length) {
       dispatch(
         setFlashMsg({ type: "error", message: "Email must not be empty" })
@@ -105,7 +106,7 @@ export default function SignUp() {
       return;
     }
 
-    console.log(trimmedPw)
+    console.log(trimmedPw);
     signUp(
       trimmedEmail,
       trimmedPw,
@@ -162,7 +163,22 @@ export default function SignUp() {
             Hotmail
           </option>
           <option value="OUTLOOK">Outlook</option>
+          <option value="GMAIL">Gmail</option>
         </select>
+
+        {emailService.value !== "GMAIL" ? null : (
+          <>
+            <input
+              type="password"
+              name="appPw"
+              id="appPw"
+              className="form-control"
+              placeholder="Please input app password for emailing"
+              {...appPw}
+            />
+          </>
+        )}
+
         <section className={styles.HostDetails}>
           <section className={styles.InboundDetails}>
             <label htmlFor="inbound-host">Inbound host</label>
