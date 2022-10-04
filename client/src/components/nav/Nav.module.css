@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: center;
   background-color: #ffb739;
+  color: #fa6121;
 }
 
 .TopNav {
@@ -17,7 +18,7 @@
 }
 
 .TopNav a p {
-  margin: 0 ;
+  margin: 0;
 }
 
 .TopNav ul {

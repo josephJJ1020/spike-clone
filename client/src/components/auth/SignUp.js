@@ -149,7 +149,7 @@ export default function SignUp() {
           type="email"
           name="email"
           id="email"
-          className="form-control"
+          className="form-control rounded-0"
           {...email}
         />
 
@@ -158,13 +158,13 @@ export default function SignUp() {
           type="password"
           name="pw"
           id="pw"
-          className="form-control"
+          className="form-control rounded-0"
           {...pw}
         />
 
         <label htmlFor="email-service">Email Service</label>
         <select
-          className="form-select"
+          className="form-select rounded-0"
           aria-label="Email Service"
           {...emailService}
         >
@@ -181,7 +181,7 @@ export default function SignUp() {
               type="password"
               name="appPw"
               id="appPw"
-              className="form-control"
+              className="form-control rounded-0"
               placeholder="Please input app password for emailing"
               {...appPw}
             />
@@ -195,7 +195,7 @@ export default function SignUp() {
               type="text"
               name="inbound-host"
               id="inbound-host"
-              className="form-control"
+              className="form-control rounded-0"
               {...inboundHost}
             />
             <label htmlFor="inbound-port">Inbound port</label>
@@ -203,7 +203,7 @@ export default function SignUp() {
               type="number"
               name="inbound-port"
               id="inbound-port"
-              className="form-control"
+              className="form-control rounded-0"
               {...inboundPort}
             />
           </section>
@@ -214,7 +214,7 @@ export default function SignUp() {
                 type="text"
                 name="outbound-host"
                 id="outbound-host"
-                className="form-control"
+                className="form-control rounded-0"
                 {...outboundHost}
               />
               <label htmlFor="outbound-port">Outbound port</label>
@@ -222,7 +222,7 @@ export default function SignUp() {
                 type="number"
                 name="outbound-port"
                 id="outbound-port"
-                className="form-control"
+                className="form-control rounded-0"
                 {...outboundPort}
               />
             </section>
@@ -232,7 +232,7 @@ export default function SignUp() {
         <input
           type="submit"
           value="Sign Up"
-          className="btn btn-primary"
+          className="btn btn-primary rounded-0"
           onClick={submit}
         />
         <p>

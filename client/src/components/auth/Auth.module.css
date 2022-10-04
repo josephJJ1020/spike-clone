@@ -1,85 +1,100 @@
 .LoginPage {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
 }
 
-.Left, .LoginForm {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
+.Left,
+.LoginForm {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
 .Left {
-    background-color: cadetblue;
-    background-image: url('./images/chatting.png');
-    background-position: bottom 50%;
-    background-size: cover;
+  background-color: cadetblue;
+  background-image: url("./images/chatting.png");
+  background-position: bottom right;
+  background-size: cover;
 }
 
 .Left h1 {
-    font-size: 6rem;
-    color: black;
-    filter: drop-shadow(0 0 20px gray);
+  font-size: 6rem;
+  color: black;
+  filter: drop-shadow(0 0 20px gray);
 }
 
 .LoginForm input {
-    max-width: 300px;
+  max-width: 300px;
+  width: 90vw;
 }
 
 /* Sign up */
 .SignUpPage {
-    width: 100vw;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    background-image: url('./images/telephone.jpg');
-    background-position: bottom center;
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background-image: url("./images/telephone.jpg");
+  background-position: bottom center;
 }
 
 .SignUpPage header {
-    color: white;
+  color: white;
 }
 
 .SignUpForm {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 500px;
-    gap: 10px;
-    background-color: cadetblue;
-    padding: 22px;
-    transition: height .3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  width: 90vw;
+  gap: 10px;
+  background-color: white;
+  padding: 22px;
+  transition: height 0.3s ease;
 }
 
-.SignUpForm input, .SignUpForm select {
-    max-width: 600px;
-    width: 90%;
+.SignUpForm input,
+.SignUpForm select {
+  max-width: 600px;
+  width: 90%;
 }
 
 .SignUpForm input[type="submit"] {
-    background-color: #FFB739;
+  background-color: #ffb739;
 }
 
 .HostDetails {
-    display: flex;
+  display: flex;
 }
 
 .HostDetails input {
-    max-width: 400px;
-    width: 90%;
+  max-width: 400px;
+  width: 90%;
 }
 
-.InboundDetails, .OutboundDetails {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.InboundDetails,
+.OutboundDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media screen and (max-width: 700px) {
+  .Left {
+    display: none;
+  }
+
+  .LoginForm {
+    width: 100%;
+  }
 }

@@ -70,7 +70,7 @@ export default function Login() {
         <strong>
           <h1 className={styles.Title}>Spike Clone</h1>
         </strong>
-        <p>Level up your email game</p>
+        <h3>Level up your email game</h3>
       </div>
       <form className={styles.LoginForm}>
         <h1>Sign in</h1>
@@ -79,7 +79,7 @@ export default function Login() {
           type="email"
           name="email"
           id="email"
-          className="form-control"
+          className="form-control rounded-0"
           placeholder="Enter email"
           {...emailProps}
         />
@@ -89,7 +89,7 @@ export default function Login() {
           type="password"
           name="pw"
           id="pw"
-          className="form-control"
+          className="form-control rounded-0"
           placeholder="Enter password"
           {...pwProps}
         />
@@ -98,7 +98,8 @@ export default function Login() {
         <input
           type="submit"
           value="Sign in"
-          className="btn"
+          className="btn rounded-0"
+          
           onClick={submit}
         />
         <p>

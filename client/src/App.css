@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  overflow-x: hidden;
 }
 
 .App-container {
@@ -31,6 +32,15 @@ a {
 
 a:hover {
   color: #9e502f;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 .Chat {
