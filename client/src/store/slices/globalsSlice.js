@@ -9,6 +9,7 @@ const globalSlice = createSlice({
     currentConvo: null,
     flashMsg: null,
     creatingConversation: false,
+    showSidebar: true,
   },
   reducers: {
     setReceiver: (state, action) => {
@@ -24,6 +25,9 @@ const globalSlice = createSlice({
     setCreatingConversation: (state, action) => {
       state.creatingConversation = action.payload;
     },
+    setShowSidebar: (state, action) => {
+      state.showSidebar = action.payload;
+    },
   },
 });
 
@@ -33,6 +37,7 @@ export const {
   setFlashMsg,
   setCurrentConvoId,
   setCreatingConversation,
+  setShowSidebar
 } = globalSlice.actions;
 
 export default globalSlice.reducer;

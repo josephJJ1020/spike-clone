@@ -1,3 +1,13 @@
+/* sidebar */
+.SideBar {
+  flex-grow: 1;
+  background: cadetblue;
+  border-right: 1px solid rgb(240, 234, 214);
+  max-width: 340px;
+  width: 90vw;
+  height: 100%;
+}
+
 .Contacts {
   margin: 50px 0;
 }
@@ -20,6 +30,7 @@
   display: flex;
   align-items: center;
   padding: 0 12px;
+  margin-bottom: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -79,8 +90,32 @@
   animation: fadeIn 0.3s ease alternate;
 }
 
+.CloseButton {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: none;
+}
+
 @keyframes fadeIn {
   from {
     transform: scale(0.1);
+  }
+}
+
+@media screen and (min-width: 615px) {
+  .SideBar {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 615px){
+  .SideBar {
+    position: absolute;
+    z-index: 3;
+    display: none;
+  }
+  .CloseButton {
+    display: block;
   }
 }

@@ -6,6 +6,7 @@
 .App-container {
   display: flex;
   height: calc(100vh - 64px);
+  position: relative;
 }
 
 .container {
@@ -48,6 +49,7 @@ input[type="number"] {
   width: 75vw;
   background-color: whitesmoke;
   flex-grow: 1;
+  position: relative;
 }
 
 .ChatHeader {
@@ -89,10 +91,11 @@ input[type="number"] {
 .MailForm .Call-Buttons button {
   max-width: 50px;
   max-height: 50px;
-  height: 20vw;
-  width: 20vw;
-  display: grid;
-  place-items: center;
+  height: 10vw;
+  width: 10vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   outline: none;
   border-radius: 50%;
   padding: 0%;
@@ -114,9 +117,7 @@ input[type="number"] {
   width: 100%;
 }
 
-.MailForm button {
-  width: 10%;
-  height: 100%;
+.MailForm button {  
   background-color: #ffb739;
   transition: background-color 0.3s;
   border: none;
@@ -127,14 +128,6 @@ input[type="number"] {
 
 .MailForm button:hover {
   background-color: #ac8137;
-}
-
-/* sidebar */
-.Sidebar {
-  flex-grow: 1;
-  background: cadetblue;
-  border-right: 1px solid rgb(240, 234, 214);
-  max-width: 340px;
 }
 
 .Contact {

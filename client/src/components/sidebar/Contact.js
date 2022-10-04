@@ -15,18 +15,20 @@ import {
 
 export default function Contact({ contact }) {
   const { sendFriendRequest } = useContext(AppContext);
-  const userData = useSelector((state) => state.userData);
-  const conversationsSlice = useSelector((state) => state.conversations);
+  const { userData, userId } = useSelector((state) => state.userData);
+  const { conversations } = useSelector((state) => state.conversations);
+
   const dispatch = useDispatch();
 
   const [showSent, setShowSent] = useState(false);
 
+
   const isFriend = (id) => {
-    return userData.userData.friends && userData.userData.friends.includes(id);
+    return userData.friends && userData.friends.includes(id);
   };
 
   const clickFriendRequest = () => {
-    sendFriendRequest(userData.userId, contact.id);
+    sendFriendRequest(userId, contact.id);
     setShowSent(true);
 
     setTimeout(() => {
@@ -42,7 +44,7 @@ export default function Contact({ contact }) {
           ? () => {
               let found = false;
 
-              conversationsSlice.conversations.forEach((conversation) => {
+              conversations.forEach((conversation) => {
                 // look for conversation with less than two participants (which means its only the receiver and the current user)
                 // and then check if any of the participants has the same id as the contact prop
                 // if true, set current conversation

@@ -46,3 +46,9 @@
   border: none;
   height: 30%;
 }
+
+@media screen and (max-width: 515px) {
+  .UserEmail {
+    display: none !important  ;
+  }
+}

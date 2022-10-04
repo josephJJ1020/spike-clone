@@ -29,7 +29,7 @@ export default function TopNav() {
       <ul>
         {userData.userId ? (
           <>
-            <li>{userData.userData.email}</li>
+            <li className={styles.UserEmail}>{userData.userData.email}</li>
             <li>
               <Dropdown className="shadow-none" align="end">
                 <Dropdown.Toggle
