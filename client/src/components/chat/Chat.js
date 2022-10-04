@@ -26,7 +26,7 @@ export default function Chat() {
   useEffect(() => {}, [currentConversation]);
 
   return (
-    <section className="Chat">
+    <section className={styles.Chat}>
       <button
         className={styles.ShowConversations}
         onClick={() => {

@@ -15,7 +15,8 @@ const fetchEmailFromTo = async (
   fromDate,
   toDate,
   socket,
-  onlineUsers
+  onlineUsers,
+  mailbox
 ) => {
   const imapConfig = {
     user: email,
@@ -29,12 +30,12 @@ const fetchEmailFromTo = async (
     try {
       const imap = new Imap(imapConfig);
       imap.once("ready", () => {
-        imap.openBox("INBOX", false, () => {
+        imap.openBox(mailbox, false, () => {
           imap.search(
             [
               // ["SINCE", fromDate],
-              // ["SENTBEFORE", Date.now()],
-              ["ALL"]
+              // ["SENTBEFORE", toDate],
+              ["ALL"],
             ],
             (err, results) => {
               const f = imap.fetch(results, { bodies: "" });
@@ -43,6 +44,7 @@ const fetchEmailFromTo = async (
                   simpleParser(stream, async (err, parsed) => {
                     if (err) console.log(err.message);
                     //   const {from, subject, textAsHtml, text} = parsed;
+                    // console.log(parsed)
                     const { headers, from, to, text, attachments } = parsed;
 
                     // format text to not include thread replies
@@ -66,7 +68,7 @@ const fetchEmailFromTo = async (
                     ];
 
                     if (attachments) {
-                      attachments.forEach(async (file) => {
+                      attachments.forEach((file) => {
                         try {
                           if (
                             !fs.existsSync(`../server/files/${file.filename}`)

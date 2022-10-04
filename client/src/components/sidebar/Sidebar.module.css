@@ -14,6 +14,7 @@
 
 .Conversations {
   margin: 20px 0;
+  overflow-y: scroll;
 }
 
 .Contacts,
@@ -21,7 +22,6 @@
   max-height: 40%;
   text-align: left;
   padding-left: 10px;
-  overflow-y: scroll;
 }
 
 .Conversation {
@@ -43,6 +43,22 @@
   margin-bottom: 20px;
 }
 
+/* contact */
+.Contact {
+  max-width: calc(100% - 20px);
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.Contact:hover {
+  background-color: rgb(81, 128, 129);
+}
 .onlineCircle {
   width: 10px;
   height: 10px;
@@ -109,7 +125,7 @@
   }
 }
 
-@media screen and (max-width: 615px){
+@media screen and (max-width: 615px) {
   .SideBar {
     position: absolute;
     z-index: 3;

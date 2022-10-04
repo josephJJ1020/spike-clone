@@ -78,20 +78,35 @@ io.on("connection", (socket) => {
             } else {
               password = user.password;
             }
-            await fetchEmail(
-              user.email,
-              password,
-              user.inboundHost,
-              user.inboundPort,
-              0, // within last ten days
-              user.lastFetched,
-              io,
-              onlineUsers
-            );
+            await Promise.all([
+              fetchEmail(
+                user.email,
+                password,
+                user.inboundHost,
+                user.inboundPort,
+                0, // within last ten days
+                // user.lastFetched,
+                Date.now(),
+                io,
+                onlineUsers,
+                "SENT"
+              ),
+              fetchEmail(
+                user.email,
+                password,
+                user.inboundHost,
+                user.inboundPort,
+                0, // within last ten days
+                // user.lastFetched,
+                Date.now(),
+                io,
+                onlineUsers,
+                "INBOX"
+              ),
+            ]);
           } catch (err) {
             console.log(err.message);
           }
-
 
           const emailListener = new EmailListener(
             user.email,
@@ -180,7 +195,6 @@ io.on("connection", (socket) => {
   socket.on(
     "new-message",
     async ({ user, message, convoId, subject = null, files }) => {
-
       let filesList = [];
 
       // 1. upload files to file directory and add each file to filesList array (which will be passed into the message controller)
@@ -210,6 +224,8 @@ io.on("connection", (socket) => {
         null,
         null
       );
+
+      console.log(newConversation.messages[newConversation.messages.length - 1])
 
       onlineUsers.forEach((user) => {
         if (

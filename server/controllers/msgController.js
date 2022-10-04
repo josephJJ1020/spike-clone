@@ -9,7 +9,9 @@ const Conversation = mongoose.model("Conversation", ConversationSchema);
 const msgController = {
   // get all conversations where the user is a participant
   getUserConversations: async (email) => {
-    return await Conversation.find({ "participants.email": email });
+    return await Conversation.find({ "participants.email": email }).sort({
+      "message.dateCreated": 1,
+    });
   },
 
   getConversationByParticipants: async (participants) => {
@@ -57,22 +59,26 @@ const msgController = {
 
       await convo.save();
 
-      await Conversation.findByIdAndUpdate(convo._id, {
-        $push: {
-          messages: {
-            conversationId: null,
-            id: messagId ? messagId : uuid().slice(0, 6),
-            from: user,
-            content: message.content,
-            files: filesList,
-            dateCreated: dateCreated ? dateCreated : Date.now(),
+      const newConvo = await Conversation.findByIdAndUpdate(
+        convo._id,
+        {
+          $push: {
+            messages: {
+              conversationId: null,
+              id: messagId ? messagId : uuid().slice(0, 6),
+              from: user,
+              content: message.content,
+              files: filesList,
+              dateCreated: dateCreated ? dateCreated : Date.now(),
+            },
           },
         },
-      }).sort({ dateCreated: 1 });
+        { new: true }
+      ).sort({ "messages.dateCreated": 1 });
 
-      await convo.save();
+      await newConvo.save();
 
-      return convo;
+      return newConvo;
     }
 
     let convo = await Conversation.findById(convoId);
@@ -84,22 +90,26 @@ const msgController = {
           (participant) => participant.email === user.email
         )
       ) {
-        await Conversation.findByIdAndUpdate(convo._id, {
-          $push: {
-            messages: {
-              conversationId: convo._id,
-              id: messagId ? messagId : uuid().slice(0, 6),
-              from: user,
-              content: message.content,
-              files: filesList,
-              dateCreated: dateCreated ? dateCreated : Date.now(),
+        const newConvo = await Conversation.findByIdAndUpdate(
+          convo._id,
+          {
+            $push: {
+              messages: {
+                conversationId: convo._id,
+                id: messagId ? messagId : uuid().slice(0, 6),
+                from: user,
+                content: message.content,
+                files: filesList,
+                dateCreated: dateCreated ? dateCreated : Date.now(),
+              },
             },
           },
-        }).sort({ dateCreated: 1 });
+          { new: true }
+        ).sort({ "messages.dateCreated": 1 });
 
-        await convo.save();
+        await newConvo.save();
 
-        return convo;
+        return newConvo;
       } else {
         return new Error("User is not in Conversation");
       }

@@ -4,32 +4,37 @@ import Badge from "react-bootstrap/esm/Badge";
 import { useSelector } from "react-redux";
 import { useRef, useEffect } from "react";
 
-export default function Mails({ currentConversation }) {
-  const userDataSlice = useSelector((state) => state.userData);
+import styles from "./Chat.module.css";
+
+export default function Mails({ x }) {
+  const { userData } = useSelector((state) => state.userData);
+  const { conversations } = useSelector((state) => state.conversations);
+  const { currentConvoId } = useSelector((state) => state.global);
 
   const bottomDiv = useRef();
 
+  const currentConversation = currentConvoId
+    ? conversations.find((convo) => convo._id === currentConvoId)
+    : null;
   useEffect(() => {
-    bottomDiv.current.scrollIntoView({ behavior: "smooth" });
+    bottomDiv.current.scrollIntoView();
   });
 
   return (
-    <section className="Mails">
+    <section className={styles.Mails} key={currentConversation}>
       {currentConversation && currentConversation.messages.length ? (
         currentConversation.messages.map((message, index) => {
           return (
             <section
               key={index}
-              className="message"
+              className={styles.message}
               style={{
                 textAlign:
-                  message.from.email !== userDataSlice.userData.email
-                    ? "left"
-                    : "right",
+                  message.from.email !== userData.email ? "left" : "right",
               }}
             >
               <strong>
-                {message.from.email === userDataSlice.userData.email
+                {message.from.email === userData.email
                   ? "You"
                   : message.from.email}
               </strong>

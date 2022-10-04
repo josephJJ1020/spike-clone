@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 export default function SignUp() {
-  const global = useSelector((state) => state.global);
+  const { flashMsg } = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   const [email, setEmail] = useInput("");
@@ -42,7 +42,7 @@ export default function SignUp() {
       outboundPort: outboundPort,
       action: "SIGNUP",
     });
-    if (global.flashMsg) return;
+    if (flashMsg) return;
     if (userData.error) {
       setFlashMsg({ type: "error", message: userData.error.message });
       return;

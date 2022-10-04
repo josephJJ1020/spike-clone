@@ -1,7 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { AppContext } from "../../context";
-import { useContext } from "react";
 
 import { getAuth } from "../../controllers/getAuth";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,7 +10,7 @@ import { setFlashMsg } from "../../store/slices/globalsSlice";
 
 // need setFlashMsg
 export default function Login() {
-  const global = useSelector((state) => state.global);
+  const { flashMsg } = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   // const { logIn, setFlashMsg } = useContext(AppContext);
@@ -27,7 +25,7 @@ export default function Login() {
       action: "LOGIN",
     });
 
-    if (global.flashMsg) return;
+    if (flashMsg) return;
     if (userData.error) {
       dispatch(setFlashMsg({ type: "error", message: userData.error.message }));
       return;
@@ -99,7 +97,6 @@ export default function Login() {
           type="submit"
           value="Sign in"
           className="btn rounded-0"
-          
           onClick={submit}
         />
         <p>

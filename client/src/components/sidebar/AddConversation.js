@@ -14,8 +14,8 @@ import { setCreatingConversation } from "../../store/slices/globalsSlice";
 import { AppContext } from "../../context";
 
 export const AddConversation = () => {
-  const userDataSlice = useSelector((state) => state.userData);
-  const globalSlice = useSelector((state) => state.global);
+  const { userData } = useSelector((state) => state.userData);
+  const { creatingConversation } = useSelector((state) => state.global);
   const dispatch = useDispatch();
 
   const { createNewConversation } = useContext(AppContext);
@@ -41,13 +41,10 @@ export const AddConversation = () => {
   };
 
   const createConversation = () => {
-    createNewConversation([
-      ...participants,
-      { email: userDataSlice.userData.email },
-    ]);
+    createNewConversation([...participants, { email: userData.email }]);
   };
 
-  const show = globalSlice.creatingConversation;
+  const show = creatingConversation;
 
   useEffect(() => {
     setTimeout(() => {
@@ -88,7 +85,12 @@ export const AddConversation = () => {
                   ))}
               </div>
               {warning && <p className="text-warning">{warning}</p>}
-              <Form.Control as="input" rows={3} {...participant} placeholder="Enter participant's email"/>
+              <Form.Control
+                as="input"
+                rows={3}
+                {...participant}
+                placeholder="Enter participant's email"
+              />
               <Button onClick={addParticipant}>Add participant</Button>
             </Form.Group>
           </Form>

@@ -58,11 +58,13 @@ export function LandingPage() {
       {
         scale: 0.1,
         opacity: 0,
-        translateX: "-50%"
+        left: "50%",
+        translateX: "-50%",
       },
       {
         scale: 1,
         opacity: 1,
+        // left: "50%",
         translateX: "-50%",
         duration: 1,
         scrollTrigger: {

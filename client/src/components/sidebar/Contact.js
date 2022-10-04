@@ -38,7 +38,7 @@ export default function Contact({ contact }) {
 
   return (
     <div
-      className="Contact"
+      className={styles.Contact}
       onClick={
         isFriend(contact.id)
           ? () => {

@@ -11,7 +11,7 @@ import notifIcon from "../../images/notification.png";
 import Dropdown from "react-bootstrap/Dropdown";
 
 export default function TopNav() {
-  const userData = useSelector((state) => state.userData);
+  const { userData, userId } = useSelector((state) => state.userData);
 
   const { friendRequestAction } = useContext(AppContext);
   const logOut = () => {
@@ -27,9 +27,9 @@ export default function TopNav() {
       </Link>
 
       <ul>
-        {userData.userId ? (
+        {userId ? (
           <>
-            <li className={styles.UserEmail}>{userData.userData.email}</li>
+            <li className={styles.UserEmail}>{userData.email}</li>
             <li>
               <Dropdown className="shadow-none" align="end">
                 <Dropdown.Toggle
@@ -42,10 +42,9 @@ export default function TopNav() {
                   />
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu style={{padding: '12px', maxHeight: '300px'}}>
-                  {userData.userData.notifications &&
-                  userData.userData.notifications.length ? (
-                    userData.userData.notifications.map((notif, index) => {
+                <Dropdown.Menu style={{ padding: "12px", maxHeight: "300px" }}>
+                  {userData.notifications && userData.notifications.length ? (
+                    userData.notifications.map((notif, index) => {
                       if (notif && notif.type === "friend-request") {
                         return (
                           <Dropdown.Item key={index}>
@@ -59,7 +58,7 @@ export default function TopNav() {
                                       friendRequestAction({
                                         id: notif.id,
                                         type: "ACCEPT",
-                                        sender: userData.userId,
+                                        sender: userId,
                                         receiver: notif.from,
                                       })
                                     }
@@ -72,7 +71,7 @@ export default function TopNav() {
                                       friendRequestAction({
                                         id: notif.id,
                                         type: "REJECT",
-                                        sender: userData.userId,
+                                        sender: userId,
                                         receiver: notif.from,
                                       })
                                     }

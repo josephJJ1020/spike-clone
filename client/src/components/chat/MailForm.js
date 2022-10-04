@@ -47,9 +47,9 @@ export default function MailForm({ participants, receiverEmail }) {
   };
 
   return (
-    <form className="MailForm">
+    <form className={styles.MailForm}>
       {!participants || participants.length < 2 ? (
-        <div className="Call-Buttons">
+        <div className={styles.CallButtons}>
           <button
             className={styles.callButton}
             type="button"
@@ -71,7 +71,7 @@ export default function MailForm({ participants, receiverEmail }) {
         </div>
       ) : null}
 
-      <div className="Msg-Form">
+      <div className={styles.MsgForm}>
         <input
           type={"text"}
           className="form-control shadow-none"

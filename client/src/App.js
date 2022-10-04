@@ -60,9 +60,9 @@ const clientSocket = io("http://localhost:3001");
 
 function App() {
   // redux states
-  const userDataSlice = useSelector((state) => state.userData);
-  const conversationsSlice = useSelector((state) => state.conversations);
-  const globalSlice = useSelector((state) => state.global);
+  const { userData, userId } = useSelector((state) => state.userData);
+  const { conversations } = useSelector((state) => state.conversations);
+  const {receiver, currentConvoId, flashMsg} = useSelector((state) => state.global);
   const { errMsg, offer, onCall, callType } = useSelector(
     (state) => state.callState
   );
@@ -77,24 +77,22 @@ function App() {
     });
 
     clientSocket.on("onlineUsers", (data) => {
-      dispatch(
-        setOnlineUsers(data.filter((user) => user.id !== userDataSlice.userId))
-      ); // should be an array of user objects with id and socketId
+      dispatch(setOnlineUsers(data.filter((user) => user.id !== userId))); // should be an array of user objects with id and socketId
     });
 
     clientSocket.on("disconnect", () => {
-      setConnected(false)
+      setConnected(false);
     });
 
-    if (userDataSlice.userData) {
+    if (userData) {
       clientSocket.emit("user-connection", {
-        id: userDataSlice.userId,
+        id: userId,
         // firstName: userDataSlice.userData.firstName,
         // lastName: userDataSlice.userData.lastName,
-        email: userDataSlice.userData.email,
+        email: userData.email,
       });
 
-      clientSocket.emit("load-conversations", userDataSlice.userData.email); // load conversations of user
+      clientSocket.emit("load-conversations", userData.email); // load conversations of user
     }
 
     return () => {
@@ -116,24 +114,19 @@ function App() {
     });
 
     clientSocket.on("new-conversation", (newConversation) => {
-      dispatch(
-        setConversations([...conversationsSlice.conversations, newConversation])
-      ); // should be a conversation object with id, participants, and messages fields
+      dispatch(setConversations([...conversations, newConversation])); // should be a conversation object with id, participants, and messages fields
     });
 
     // when user receives a friend request
     clientSocket.on("friend-request", (data) => {
-      if (userDataSlice.userData) {
-        const newNotifications = [
-          ...userDataSlice.userData.notifications,
-          data,
-        ];
+      if (userData) {
+        const newNotifications = [...userData.notifications, data];
 
         // add friend request notification to user's notifications and store new userData in session storage
         sessionStorage.setItem(
           "userDetails",
           JSON.stringify({
-            ...userDataSlice.userData,
+            ...userData,
             notifications: newNotifications,
           })
         );
@@ -149,12 +142,12 @@ function App() {
     clientSocket.on("accept-friend-request", (data) => {
       // check if there is data sent
       if (data) {
-        if (userDataSlice.userData) {
+        if (userData) {
           // replace user notifications in session storage
           sessionStorage.setItem(
             "userDetails",
             JSON.stringify({
-              ...userDataSlice.userData,
+              ...userData,
               notifications: data.notifications,
               friends: data.friends,
             })
@@ -170,12 +163,12 @@ function App() {
     clientSocket.on("reject-friend-request", (data) => {
       // check if there is data sent
       if (data) {
-        if (userDataSlice.userData) {
+        if (userData) {
           // replace user notifications in session storage
           sessionStorage.setItem(
             "userDetails",
             JSON.stringify({
-              ...userDataSlice.userData,
+              ...userData,
               notifications: data.notifications,
             })
           );
@@ -193,7 +186,7 @@ function App() {
       // if user is on call, emit call-unavailable event to caller
       if (onCall) {
         clientSocket.emit("call-unavailable", {
-          sender: userDataSlice.userData.email,
+          sender: userData.email,
           receiver: data.sender,
         });
       } else {
@@ -275,20 +268,20 @@ function App() {
       clientSocket.off("reject-offer");
       clientSocket.off("call-ended");
     };
-  }, [userDataSlice, dispatch, conversationsSlice, errMsg, onCall]);
+  }, [userData, dispatch, conversations, errMsg, onCall]);
 
   // send new message to conversation
   const sendMessage = (message, files) => {
     clientSocket.emit("new-message", {
       user: {
-        id: userDataSlice.userId,
-        email: userDataSlice.userData.email,
+        id: userId,
+        email: userData.email,
       },
       message: {
-        to: [globalSlice.receiver], // {id, email}
+        to: [receiver], // {id, email}
         content: message,
       },
-      convoId: globalSlice.currentConvoId,
+      convoId: currentConvoId,
       files: files,
     });
   };
@@ -314,35 +307,35 @@ function App() {
   // when user starts a video call (only 1 to 1 video call)
   const videoCall = async (receiver) => {
     // if statement to avoid sending a call request to self
-    if (receiver !== userDataSlice.userData.email) {
+    if (receiver !== userData.email) {
       // set call states
       dispatch(setCallType("VIDEO"));
       dispatch(setCallee(receiver));
       dispatch(setIsCalling(true));
 
       // send webrtc offer to callee
-      makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VIDEO");
+      makeOffer(clientSocket, userData.email, receiver, "VIDEO");
     }
   };
 
   // when user starts a voice call (only 1 to 1 voice call)
   const voiceCall = async (receiver) => {
     // if statement to avoid sending a call request to self
-    if (receiver !== userDataSlice.userData.email) {
+    if (receiver !== userData.email) {
       // set call states
       dispatch(setCallType("VOICE"));
       dispatch(setCallee(receiver));
       dispatch(setIsCalling(true));
 
       // send webrtc offer to callee
-      makeOffer(clientSocket, userDataSlice.userData.email, receiver, "VOICE");
+      makeOffer(clientSocket, userData.email, receiver, "VOICE");
     }
   };
 
   // initiate call disconnection
   const disconnectFromCall = async (receiver) => {
     // send disconnect message to remote
-    hangUp(clientSocket, userDataSlice.userData.email, receiver, callType);
+    hangUp(clientSocket, userData.email, receiver, callType);
 
     // set call states; display modal saying that call has been disconnected
     dispatch(setErrMsg("Call has been disconnected"));
@@ -356,7 +349,7 @@ function App() {
     await acceptOffer(
       clientSocket,
       { offer: offer, receiver: receiver },
-      userDataSlice.userData.email
+      userData.email
     );
 
     // set call state
@@ -365,7 +358,7 @@ function App() {
 
   //
   const rejectCall = async (receiver) => {
-    await rejectOffer(clientSocket, userDataSlice.userData.email, receiver);
+    await rejectOffer(clientSocket, userData.email, receiver);
   };
 
   return (
@@ -391,27 +384,22 @@ function App() {
           <Error />
           <ReceivingCall />
           <CallScreen />
-          {globalSlice.flashMsg && <FlashMessage />}
+          {flashMsg && <FlashMessage />}
 
           <Routes>
-            <Route
-              path="/"
-              element={
-                userDataSlice.userId ? <HomePage /> : <LandingPage/>
-              }
-            />
+            <Route path="/" element={userId ? <HomePage /> : <LandingPage />} />
             <Route
               path="/login"
-              element={userDataSlice.userId ? <Navigate to="/" /> : <Login />}
+              element={userId ? <Navigate to="/" /> : <Login />}
             />
             <Route
               path="/signup"
-              element={userDataSlice.userId ? <Navigate to="/" /> : <SignUp />}
+              element={userId ? <Navigate to="/" /> : <SignUp />}
             />
             <Route path="/spike-clone" element={<Navigate to="/" />}></Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>
-          {!userDataSlice.userId ? <Footer /> : null}
+          {!userId ? <Footer /> : null}
         </main>
       </Router>
     </AppContext.Provider>
