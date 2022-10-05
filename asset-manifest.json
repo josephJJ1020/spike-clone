@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/spike-clone/spike-clone/static/css/main.559411df.css",
-    "main.js": "/spike-clone/spike-clone/static/js/main.11fcc796.js",
-    "static/media/conversational_email.png": "/spike-clone/spike-clone/static/media/conversational_email.6a0133e0c7aa4dcb7289.png",
-    "static/media/email_background.jpg": "/spike-clone/spike-clone/static/media/email_background.a716a2989352abe29b7f.jpg",
-    "static/media/telephone.jpg": "/spike-clone/spike-clone/static/media/telephone.784d6a51536d27d2e90d.jpg",
-    "static/media/email_logo.png": "/spike-clone/spike-clone/static/media/email_logo.ae7760c2a793663660d2.png",
-    "static/media/chatting.png": "/spike-clone/spike-clone/static/media/chatting.f77517036398b9937ad2.png",
-    "static/media/cat.png": "/spike-clone/spike-clone/static/media/cat.df02ef4adb7dba999e41.png",
-    "index.html": "/spike-clone/spike-clone/index.html",
-    "main.559411df.css.map": "/spike-clone/spike-clone/static/css/main.559411df.css.map",
-    "main.11fcc796.js.map": "/spike-clone/spike-clone/static/js/main.11fcc796.js.map"
+    "main.css": "/static/css/main.411fb342.css",
+    "main.js": "/static/js/main.c9b00015.js",
+    "static/media/conversational_email.png": "/static/media/conversational_email.6a0133e0c7aa4dcb7289.png",
+    "static/media/email_background.jpg": "/static/media/email_background.a716a2989352abe29b7f.jpg",
+    "static/media/telephone.jpg": "/static/media/telephone.784d6a51536d27d2e90d.jpg",
+    "static/media/email_logo.png": "/static/media/email_logo.ae7760c2a793663660d2.png",
+    "static/media/chatting.png": "/static/media/chatting.f77517036398b9937ad2.png",
+    "static/media/cat.png": "/static/media/cat.df02ef4adb7dba999e41.png",
+    "index.html": "/index.html",
+    "main.411fb342.css.map": "/static/css/main.411fb342.css.map",
+    "main.c9b00015.js.map": "/static/js/main.c9b00015.js.map"
   },
   "entrypoints": [
-    "static/css/main.559411df.css",
-    "static/js/main.11fcc796.js"
+    "static/css/main.411fb342.css",
+    "static/js/main.c9b00015.js"
   ]
 }
