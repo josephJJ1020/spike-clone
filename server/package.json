@@ -4,7 +4,7 @@
   "description": "Spike email app clone (server)",
   "main": "app.js",
   "scripts": {
-    "test": "jest \"src/**/*.test.js\" --detectOpenHandles",
+    "test": "jest --detectOpenHandles",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },

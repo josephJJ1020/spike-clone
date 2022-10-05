@@ -203,7 +203,7 @@ io.on("connection", (socket) => {
 
           filesList.push({
             filename: file.filename,
-            fileLink: `http://localhost:3001/${file.filename}`,
+            fileLink: `${process.env.SERVER_URI}/${file.filename}`,
           });
         } catch (err) {
           console.log(err);

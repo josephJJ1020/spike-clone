@@ -3,6 +3,8 @@ const fs = require("fs");
 
 const msgController = require("../controllers/msgController");
 const formatText = require("./formatText");
+
+require('dotenv').config()
 class EmailListener {
   #password;
   #inboundHost;
@@ -96,7 +98,7 @@ class EmailListener {
 
                 filesList.push({
                   filename: file.fileName,
-                  fileLink: `http://localhost:3001/${file.fileName}`,
+                  fileLink: `${process.env.SERVER_URI}/${file.fileName}`,
                 });
               } catch (err) {
                 console.log(err);

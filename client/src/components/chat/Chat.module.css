@@ -51,6 +51,7 @@
 
 /* mails */
 .Mails {
+  width: 100%;
   height: calc(100% - 120px);
   padding: 20px;
   text-align: left;
@@ -167,6 +168,7 @@
 }
 
 .message {
+  max-width: 100%;
   margin-bottom: 30px;
 }
 

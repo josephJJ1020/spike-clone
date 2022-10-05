@@ -56,7 +56,7 @@ import {
 import { LandingPage } from "./components/home/LandingPage";
 
 // create socket
-const clientSocket = io("http://localhost:3001");
+const clientSocket = io(process.env.REACT_APP_SOCKET_ORIGIN);
 
 function App() {
   // redux states
@@ -79,7 +79,7 @@ function App() {
     });
 
     clientSocket.on("onlineUsers", (data) => {
-      dispatch(setOnlineUsers(data.filter((user) => user.id !== userId))); // should be an array of user objects with id and socketId
+      dispatch(setOnlineUsers(data.filter((user) => user.id !== userId)));
     });
 
     clientSocket.on("disconnect", () => {
@@ -89,8 +89,6 @@ function App() {
     if (userData) {
       clientSocket.emit("user-connection", {
         id: userId,
-        // firstName: userDataSlice.userData.firstName,
-        // lastName: userDataSlice.userData.lastName,
         email: userData.email,
       });
 

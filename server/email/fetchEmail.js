@@ -38,8 +38,8 @@ const fetchEmailFromTo = async (
         imap.openBox(mailbox, false, () => {
           imap.search(
             [
-              // ["SINCE", fromDate],
-              // ["SENTBEFORE", toDate],
+              ["SINCE", fromDate],
+              // ["SENTBEFORE", toDate + 86400000], // to include emails today as well
               ["ALL"],
             ],
             (err, results) => {
@@ -82,7 +82,7 @@ const fetchEmailFromTo = async (
                           // add filename and file link to filesList array (to store later in database inside the message object)
                           filesList.push({
                             filename: file.filename,
-                            fileLink: `http://localhost:3001/${file.filename}`,
+                            fileLink: `${process.env.SERVER_URI}/${file.filename}`,
                           });
                         } catch (err) {
                           console.log(err);
