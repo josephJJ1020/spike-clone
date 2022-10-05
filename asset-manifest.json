@@ -1,15 +1,19 @@
 {
   "files": {
-    "main.css": "/spike-clone/static/css/main.12cf2ae4.css",
-    "main.js": "/spike-clone/static/js/main.a8762d8f.js",
+    "main.css": "/spike-clone/static/css/main.99a06b94.css",
+    "main.js": "/spike-clone/static/js/main.f7d02818.js",
+    "static/media/conversational_email.png": "/spike-clone/static/media/conversational_email.6a0133e0c7aa4dcb7289.png",
+    "static/media/email_background.jpg": "/spike-clone/static/media/email_background.a716a2989352abe29b7f.jpg",
     "static/media/telephone.jpg": "/spike-clone/static/media/telephone.784d6a51536d27d2e90d.jpg",
-    "static/media/chatting.png": "/spike-clone/static/media/chatting.da2f6b1e6707119bf14f.png",
+    "static/media/email_logo.png": "/spike-clone/static/media/email_logo.ae7760c2a793663660d2.png",
+    "static/media/chatting.png": "/spike-clone/static/media/chatting.f77517036398b9937ad2.png",
+    "static/media/cat.png": "/spike-clone/static/media/cat.df02ef4adb7dba999e41.png",
     "index.html": "/spike-clone/index.html",
-    "main.12cf2ae4.css.map": "/spike-clone/static/css/main.12cf2ae4.css.map",
-    "main.a8762d8f.js.map": "/spike-clone/static/js/main.a8762d8f.js.map"
+    "main.99a06b94.css.map": "/spike-clone/static/css/main.99a06b94.css.map",
+    "main.f7d02818.js.map": "/spike-clone/static/js/main.f7d02818.js.map"
   },
   "entrypoints": [
-    "static/css/main.12cf2ae4.css",
-    "static/js/main.a8762d8f.js"
+    "static/css/main.99a06b94.css",
+    "static/js/main.f7d02818.js"
   ]
 }
