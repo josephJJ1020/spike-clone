@@ -117,6 +117,11 @@ function App() {
       dispatch(setConversations([...conversations, newConversation])); // should be a conversation object with id, participants, and messages fields
     });
 
+    // load previous 10 messages
+    clientSocket.on("lazy-load-conversation", (convo) => {
+      dispatch(replaceConvo(convo));
+    });
+
     // when user receives a friend request
     clientSocket.on("friend-request", (data) => {
       if (userData) {
@@ -361,6 +366,11 @@ function App() {
     await rejectOffer(clientSocket, userData.email, receiver);
   };
 
+  // lazy load conversation
+  const lazyLoadConversation = (convoId, latestLimit) => {
+    clientSocket.emit("lazy-load-conversation", { convoId, latestLimit });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -373,6 +383,7 @@ function App() {
         acceptCall,
         rejectCall,
         disconnectFromCall,
+        lazyLoadConversation,
       }}
     >
       <Router>

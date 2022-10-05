@@ -188,6 +188,16 @@ io.on("connection", (socket) => {
     // participants will add this new conversation to their conversations list in the frontend
   });
 
+  // lazy load conversation messages on scroll
+  socket.on("lazy-load-conversation", async (data) => {
+    const newConvo = await msgController.lazyLoadConversation(
+      data.convoId,
+      data.latestLimit
+    );
+
+    io.to(socket.id).emit("lazy-load-conversation", newConvo);
+  });
+
   // send new message
   socket.on(
     "new-message",

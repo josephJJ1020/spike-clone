@@ -22,7 +22,43 @@ const msgController = {
           },
         },
       },
+      {
+        $set: {
+          messages: {
+            $slice: ["$messages", -10],
+          },
+        },
+      },
     ]);
+  },
+
+  lazyLoadConversation: async (convoId, latestLimit) => {
+    const newLimit = 10 + latestLimit;
+
+    const convo = await Conversation.findById(convoId);
+
+    const newConvo = await Conversation.aggregate([
+      { $match: { _id: convo._id } },
+      {
+        $set: {
+          messages: {
+            $sortArray: {
+              input: "$messages",
+              sortBy: { dateCreated: 1 },
+            },
+          },
+        },
+      },
+      {
+        $set: {
+          messages: {
+            $slice: ["$messages", -newLimit],
+          },
+        },
+      },
+    ]);
+
+    return newConvo[0];
   },
 
   getConversationByParticipants: async (participants) => {
@@ -86,7 +122,7 @@ const msgController = {
           },
         },
         { new: true }
-      ).sort({ "messages.dateCreated": 1 });
+      );
 
       await newConvo.save();
 
@@ -114,23 +150,32 @@ const msgController = {
 
         await convo.save();
 
-        const newConvo = await Conversation.aggregate([
-          {
-            $match: { _id: convo._id },
-          },
+        const newConvo = await Conversation.aggregate(
+          [
+            {
+              $match: { _id: convo._id },
+            },
 
-          {
-            $set: {
-              messages: {
-                $sortArray: {
-                  input: "$messages",
-                  sortBy: { dateCreated: 1 },
+            {
+              $set: {
+                messages: {
+                  $sortArray: {
+                    input: "$messages",
+                    sortBy: { dateCreated: 1 },
+                  },
                 },
               },
             },
-          },
-          
-        ], {$new: true});
+            {
+              $set: {
+                messages: {
+                  $slice: ["$messages", -10],
+                },
+              },
+            },
+          ],
+          { $new: true }
+        );
 
         return newConvo[0]; // return first document since aggregate returns an array
       } else {

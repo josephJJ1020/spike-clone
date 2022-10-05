@@ -38,7 +38,7 @@ const fetchEmailFromTo = async (
         imap.openBox(mailbox, false, () => {
           imap.search(
             [
-              ["SINCE", fromDate],
+              // ["SINCE", fromDate],
               // ["SENTBEFORE", toDate + 86400000], // to include emails today as well
               ["ALL"],
             ],
