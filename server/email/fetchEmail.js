@@ -1,11 +1,14 @@
 const Imap = require("imap");
+const fs = require("fs");
+
 const msgController = require("../controllers/msgController");
 const { controller: userController } = require("../controllers/controller");
-const fs = require("fs");
+const formatText = require('./formatText')
 
 const { simpleParser } = require("mailparser");
 
 require("dotenv").config();
+
 
 const fetchEmailFromTo = async (
   email,
@@ -43,16 +46,10 @@ const fetchEmailFromTo = async (
                 msg.on("body", (stream) => {
                   simpleParser(stream, async (err, parsed) => {
                     if (err) console.log(err.message);
-                    //   const {from, subject, textAsHtml, text} = parsed;
-                    // console.log(parsed)
                     const { headers, from, to, text, attachments } = parsed;
 
                     // format text to not include thread replies
-                    const content = text
-                      ? text
-                          .split("________________________________")[0]
-                          .replace(/(\r\n|\n|\r)/gm, "")
-                      : "";
+                    const content = formatText(text);
 
                     // upload files from mail.attachments first before adding the message
                     let filesList = [];
@@ -67,6 +64,7 @@ const fetchEmailFromTo = async (
                       }),
                     ];
 
+                    // if there are attachments, upload them to server
                     if (attachments) {
                       attachments.forEach((file) => {
                         try {
@@ -79,6 +77,7 @@ const fetchEmailFromTo = async (
                             );
                           }
 
+                          // add filename and file link to filesList array (to store later in database inside the message object)
                           filesList.push({
                             filename: file.filename,
                             fileLink: `http://localhost:3001/${file.filename}`,
@@ -88,12 +87,14 @@ const fetchEmailFromTo = async (
                         }
                       });
                     }
+
                     let newConvo;
 
+                    // check if convo with participants already exists
                     const convo =
                       await msgController.getConversationByParticipants(
                         participants
-                      ); // this is working
+                      );
 
                     // if convo doesn't exist, make new one
                     if (!convo) {
@@ -135,8 +136,6 @@ const fetchEmailFromTo = async (
                         headers.get("message-id"),
                         Date.parse(headers.get("date"))
                       );
-
-                      console.log(`newConvo id: ${newConvo._id}`);
 
                       // lastly, emit new-message event to all online users
 

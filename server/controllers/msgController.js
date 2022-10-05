@@ -9,9 +9,20 @@ const Conversation = mongoose.model("Conversation", ConversationSchema);
 const msgController = {
   // get all conversations where the user is a participant
   getUserConversations: async (email) => {
-    return await Conversation.find({ "participants.email": email }).sort({
-      "message.dateCreated": 1,
-    });
+    // find conversations and sort
+    return await Conversation.aggregate([
+      { $match: { "participants.email": email } },
+      {
+        $set: {
+          messages: {
+            $sortArray: {
+              input: "$messages",
+              sortBy: { dateCreated: 1 },
+            },
+          },
+        },
+      },
+    ]);
   },
 
   getConversationByParticipants: async (participants) => {
@@ -59,6 +70,7 @@ const msgController = {
 
       await convo.save();
 
+      // no need to aggregate/sort messages here since we're pushing the first message of the conversation
       const newConvo = await Conversation.findByIdAndUpdate(
         convo._id,
         {
@@ -90,26 +102,37 @@ const msgController = {
           (participant) => participant.email === user.email
         )
       ) {
-        const newConvo = await Conversation.findByIdAndUpdate(
-          convo._id,
+        // push message to conversation's messages field
+        await convo.messages.push({
+          conversationId: convo._id,
+          id: messagId ? messagId : uuid().slice(0, 6),
+          from: user,
+          content: message.content,
+          files: filesList,
+          dateCreated: dateCreated ? dateCreated : Date.now(),
+        });
+
+        await convo.save();
+
+        const newConvo = await Conversation.aggregate([
           {
-            $push: {
+            $match: { _id: convo._id },
+          },
+
+          {
+            $set: {
               messages: {
-                conversationId: convo._id,
-                id: messagId ? messagId : uuid().slice(0, 6),
-                from: user,
-                content: message.content,
-                files: filesList,
-                dateCreated: dateCreated ? dateCreated : Date.now(),
+                $sortArray: {
+                  input: "$messages",
+                  sortBy: { dateCreated: 1 },
+                },
               },
             },
           },
-          { new: true }
-        ).sort({ "messages.dateCreated": 1 });
+          
+        ], {$new: true});
 
-        await newConvo.save();
-
-        return newConvo;
+        return newConvo[0]; // return first document since aggregate returns an array
       } else {
         return new Error("User is not in Conversation");
       }

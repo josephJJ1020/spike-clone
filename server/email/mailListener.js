@@ -2,6 +2,7 @@ const notifier = require("mail-notifier");
 const fs = require("fs");
 
 const msgController = require("../controllers/msgController");
+const formatText = require("./formatText");
 class EmailListener {
   #password;
   #inboundHost;
@@ -60,9 +61,7 @@ class EmailListener {
         })
         .on("mail", async (mail) => {
           // format text to not include thread replies
-          const content = mail.text
-            .split("________________________________")[0]
-            .replace(/(\r\n|\n|\r)/gm, "");
+          const content = formatText(mail.text);
 
           // upload files from mail.attachments first before adding the message
           let filesList = [];
@@ -137,7 +136,7 @@ class EmailListener {
             )
           ) {
             console.log("message already exists");
-            return
+            return;
           } else {
             newConvo = await this.messageController.addMessage(
               {

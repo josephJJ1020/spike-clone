@@ -84,9 +84,8 @@ io.on("connection", (socket) => {
                 password,
                 user.inboundHost,
                 user.inboundPort,
-                0, // within last ten days
-                // user.lastFetched,
-                Date.now(),
+                user.lastFetched - 864000000, // user.lastFetched minus ten days
+                user.lastFetched,
                 io,
                 onlineUsers,
                 "SENT"
@@ -96,9 +95,8 @@ io.on("connection", (socket) => {
                 password,
                 user.inboundHost,
                 user.inboundPort,
-                0, // within last ten days
-                // user.lastFetched,
-                Date.now(),
+                user.lastFetched - 864000000, // user.lastFetched minus ten days
+                user.lastFetched,
                 io,
                 onlineUsers,
                 "INBOX"
@@ -224,8 +222,6 @@ io.on("connection", (socket) => {
         null,
         null
       );
-
-      console.log(newConversation.messages[newConversation.messages.length - 1])
 
       onlineUsers.forEach((user) => {
         if (
