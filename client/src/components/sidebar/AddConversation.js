@@ -55,6 +55,7 @@ export const AddConversation = () => {
   return (
     <>
       <Modal
+        centered
         show={show}
         onHide={() => dispatch(setCreatingConversation(false))}
       >
@@ -63,11 +64,6 @@ export const AddConversation = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Subject (optional)</Form.Label>
-              <Form.Control type="text" placeholder="Subject" autoFocus />
-            </Form.Group>
-
             <Form.Group
               className="mb-3"
               controlId="exampleForm.ControlTextarea1"

@@ -16,7 +16,7 @@ export default function Conversation({ convo }) {
     (user) => user.email !== userData.email
   );
 
-  const selected = currentConvoId === convo._id
+  const selected = currentConvoId === convo._id;
 
   return (
     <div
@@ -25,10 +25,11 @@ export default function Conversation({ convo }) {
         dispatch(setCurrentConvoId(convo._id));
         dispatch(setReceiver(null));
       }}
-      style={{backgroundColor: selected ? '#ffb739' : null}}
+      style={{ backgroundColor: selected ? "#ffb739" : null }}
     >
-      {participants &&
-        participants.map((participant) => participant.email).join(", ")}
+      {convo.participants.length < 2
+        ? 'You'
+        : participants && participants.map((participant) => participant.email).join(", ")}
     </div>
   );
 }

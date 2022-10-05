@@ -7,6 +7,8 @@ export default function ChatHeader({ participants }) {
   const { receiver, currentConvoId } = useSelector((state) => state.global);
   const { userData } = useSelector((state) => state.userData);
 
+  const filteredParticipants = participants.filter(participant => participant.email !== userData.email)
+
   return (
     <div className={styles.ChatHeader}>
       {receiver ? (
@@ -19,13 +21,13 @@ export default function ChatHeader({ participants }) {
         <>
           <div className={styles.Subject}>
             <p>
-              {participants
+              {participants.length > 1 ? filteredParticipants
                 .map((participant) =>
                   participant.email !== userData.email
                     ? participant.email
                     : null
                 )
-                .join(", ")}
+                .join(", ") : 'You'}
             </p>
           </div>
         </>

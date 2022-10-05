@@ -64,51 +64,50 @@ io.on("connection", (socket) => {
       const listener = emailListeners.find(
         (listener) => listener.email === data.email
       );
+      const user = await controller.searchUserForNodemailer(data.email);
+      if (user) {
+        // fetch user's existing emails and represent them as conversations
+        try {
+          let password;
 
-      if (!listener) {
-        const user = await controller.searchUserForNodemailer(data.email);
-
-        if (user) {
-          // fetch user's existing emails and represent them as conversations
-          try {
-            let password;
-
-            if (user.emailService === "GMAIL") {
-              password = user.appPassword;
-            } else {
-              password = user.password;
-            }
-            await Promise.all([
-              fetchEmail(
-                user.email,
-                password,
-                user.inboundHost,
-                user.inboundPort,
-                user.lastFetched - 864000000, // user.lastFetched minus ten days
-                user.lastFetched,
-                io,
-                onlineUsers,
-                "SENT"
-              ),
-              fetchEmail(
-                user.email,
-                password,
-                user.inboundHost,
-                user.inboundPort,
-                user.lastFetched - 864000000, // user.lastFetched minus ten days
-                user.lastFetched,
-                io,
-                onlineUsers,
-                "INBOX"
-              ),
-            ]);
-          } catch (err) {
-            console.log(err.message);
+          if (user.emailService === "GMAIL") {
+            password = user.appPassword;
+          } else {
+            password = user.password;
           }
 
+          await Promise.all([
+            fetchEmail(
+              user.email,
+              password,
+              user.inboundHost,
+              user.inboundPort,
+              user.lastFetched - 864000000, // user.lastFetched minus ten days
+              user.lastFetched,
+              io,
+              onlineUsers,
+              user.emailService === "GMAIL" ? "[Gmail]/Sent Mail" : "SENT" // error here when user is using gmail service
+            ),
+            fetchEmail(
+              user.email,
+              password,
+              user.inboundHost,
+              user.inboundPort,
+              user.lastFetched - 864000000, // user.lastFetched minus ten days
+              user.lastFetched,
+              io,
+              onlineUsers,
+              "INBOX"
+            ),
+          ]);
+        } catch (err) {
+          console.log(err.message);
+        }
+
+        if (!listener) {
           const emailListener = new EmailListener(
             user.email,
-            user.password,
+            user.emailService === "GMAIL" ? user.appPassword : user.password,
             user.inboundHost,
             user.inboundPort,
             io,

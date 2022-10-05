@@ -162,9 +162,6 @@ class EmailListener {
               this.socket.to(user.socketId).emit("new-message", newConvo);
             }
           });
-          // listener works, just need to format text and emit new-message event to user
-
-          // NOTE: need to format text because it doesn't return the message only
         })
         .on("error", (err) => {
           console.log(err.message);

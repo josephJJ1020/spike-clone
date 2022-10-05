@@ -3,12 +3,11 @@ const fs = require("fs");
 
 const msgController = require("../controllers/msgController");
 const { controller: userController } = require("../controllers/controller");
-const formatText = require('./formatText')
+const formatText = require("./formatText");
 
 const { simpleParser } = require("mailparser");
 
 require("dotenv").config();
-
 
 const fetchEmailFromTo = async (
   email,
@@ -31,8 +30,11 @@ const fetchEmailFromTo = async (
 
   const getEmails = () => {
     try {
+      let minLastFetched = Date.now();
+
       const imap = new Imap(imapConfig);
       imap.once("ready", () => {
+        console.log("ready to fetch emails");
         imap.openBox(mailbox, false, () => {
           imap.search(
             [
@@ -154,7 +156,7 @@ const fetchEmailFromTo = async (
 
                     await userController.setUserLastFetched(
                       email,
-                      Date.parse(headers.get("date"))
+                      Math.min(Date.parse(headers.get("date"), minLastFetched))
                     );
                   });
                 });
@@ -172,6 +174,7 @@ const fetchEmailFromTo = async (
       });
 
       imap.once("error", (err) => {
+        console.log("email fetcher errored");
         console.log(err);
       });
 

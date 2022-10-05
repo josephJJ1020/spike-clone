@@ -40,9 +40,7 @@ export default function Chat() {
           <ChatHeader
             participants={
               currentConvoId
-                ? currentConversation.participants.filter(
-                    (user) => user.email !== userData.email
-                  )
+                ? currentConversation.participants
                 : null
             }
           />
@@ -59,9 +57,11 @@ export default function Chat() {
             }
             receiverEmail={
               currentConvoId
-                ? currentConversation.participants.filter(
-                    (user) => user.email !== userData.email
-                  )[0].email
+                ? currentConversation.participants.length > 1
+                  ? currentConversation.participants.filter(
+                      (user) => user.email !== userData.email
+                    )[0].email
+                  : currentConversation.participants[0].email
                 : receiver.email
             }
           />

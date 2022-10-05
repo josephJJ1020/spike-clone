@@ -62,7 +62,9 @@ function App() {
   // redux states
   const { userData, userId } = useSelector((state) => state.userData);
   const { conversations } = useSelector((state) => state.conversations);
-  const {receiver, currentConvoId, flashMsg} = useSelector((state) => state.global);
+  const { receiver, currentConvoId, flashMsg } = useSelector(
+    (state) => state.global
+  );
   const { errMsg, offer, onCall, callType } = useSelector(
     (state) => state.callState
   );
