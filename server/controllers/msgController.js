@@ -12,14 +12,29 @@ const msgController = {
     // find conversations and sort
     return await Conversation.aggregate([
       { $match: { "participants.email": email } },
+      // {
+      //   $set: {
+      //     messages: {
+      //       $sortArray: {
+      //         input: "$messages",
+      //         sortBy: { dateCreated: 1 },
+      //       },
+      //     },
+      //   },
+      // },
+      { $unwind: "$messages" },
       {
-        $set: {
-          messages: {
-            $sortArray: {
-              input: "$messages",
-              sortBy: { dateCreated: 1 },
-            },
-          },
+        $sort: {
+          "messages.dateCreated": 1,
+        },
+      },
+
+      {
+        $group: {
+          _id: "$_id",
+          dateCreated: { $first: "$dateCreated" },
+          participants: { $first: "$participants" },
+          messages: { $push: "$messages" },
         },
       },
       {
@@ -38,15 +53,24 @@ const msgController = {
     const convo = await Conversation.findById(convoId);
 
     const newConvo = await Conversation.aggregate([
-      { $match: { _id: convo._id } },
       {
-        $set: {
-          messages: {
-            $sortArray: {
-              input: "$messages",
-              sortBy: { dateCreated: 1 },
-            },
-          },
+        $match: {
+          _id: convo._id,
+        },
+      },
+      { $unwind: "$messages" },
+      {
+        $sort: {
+          "messages.dateCreated": 1,
+        },
+      },
+
+      {
+        $group: {
+          _id: "$_id",
+          dateCreated: { $first: "$dateCreated" },
+          participants: { $first: "$participants" },
+          messages: { $push: "$messages" },
         },
       },
       {
@@ -57,6 +81,27 @@ const msgController = {
         },
       },
     ]);
+
+    // const newConvo = await Conversation.aggregate([
+    //   { $match: { _id: convo._id } },
+    //   {
+    //     $set: {
+    //       messages: {
+    //         $sortArray: {
+    //           input: "$messages",
+    //           sortBy: { dateCreated: 1 },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $set: {
+    //       messages: {
+    //         $slice: ["$messages", -newLimit],
+    //       },
+    //     },
+    //   },
+    // ]);
 
     return newConvo[0];
   },
@@ -96,7 +141,6 @@ const msgController = {
     messagId = null,
     dateCreated
   ) => {
-    console.log(`filesList in controller: ${filesList}`);
     // check if conversation id is specified; if not, make new one (might delete this one later)
     if (!convoId) {
       let convo = new Conversation({
@@ -156,14 +200,29 @@ const msgController = {
               $match: { _id: convo._id },
             },
 
+            // {
+            //   $set: {
+            //     messages: {
+            //       $sortArray: {
+            //         input: "$messages",
+            //         sortBy: { dateCreated: 1 },
+            //       },
+            //     },
+            //   },
+            // },
+            { $unwind: "$messages" },
             {
-              $set: {
-                messages: {
-                  $sortArray: {
-                    input: "$messages",
-                    sortBy: { dateCreated: 1 },
-                  },
-                },
+              $sort: {
+                "messages.dateCreated": 1,
+              },
+            },
+
+            {
+              $group: {
+                _id: "$_id",
+                dateCreated: { $first: "$dateCreated" },
+                participants: { $first: "$participants" },
+                messages: { $push: "$messages" },
               },
             },
             {
