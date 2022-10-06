@@ -51,10 +51,11 @@ export default function Mails({ x }) {
       lazyLoadConversation(currentConvoId, currentConversation.messages.length);
 
       if (currlength > prevlength) {
-        containerDiv.current.scrollTo(
-          0,
-          scrollHeight / (5.1 * (prevlength / currlength))
-        );
+        // containerDiv.current.scrollTo(
+        //   0,
+        //   scrollHeight / (5.1 * (prevlength / currlength))
+        // );
+        latestRef.current.scrollIntoView();
       }
     }
   };
@@ -89,7 +90,9 @@ export default function Mails({ x }) {
             <section
               key={index}
               ref={
-                index === currentConversation.messages.length / 2
+                index ===
+                currentConversation.messages.length -
+                  (currentConversation.messages.length - 10)
                   ? latestRef
                   : null
               }
