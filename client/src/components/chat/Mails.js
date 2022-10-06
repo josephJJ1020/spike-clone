@@ -2,10 +2,12 @@ import React from "react";
 import Badge from "react-bootstrap/esm/Badge";
 
 import { useSelector } from "react-redux";
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { useContext } from "react";
 import { AppContext } from "../../context";
+
+import usePrevious from "../hooks/usePrevious";
 
 import styles from "./Chat.module.css";
 
@@ -24,6 +26,8 @@ export default function Mails({ x }) {
     ? conversations.find((convo) => convo._id === currentConvoId)
     : null;
 
+  let latestRef = useRef();
+
   // lazy loading
   const options = {
     root: containerDiv.current,
@@ -31,16 +35,37 @@ export default function Mails({ x }) {
     threshold: 1.0,
   };
 
+  // if current length of messages is greater than previous (unupdated) length, scroll down to avoid
+  // running lazy load function continuously
+
+  const [currlength, setCurrLength] = useState(10);
+  const prevlength = usePrevious(currlength);
+
+  const lastItem = currentConversation[currentConversation.messages.length - 1];
+
   const callbackFunction = (entries) => {
     const [entry] = entries;
+
     if (entry.isIntersecting) {
+      const { scrollHeight } = containerDiv.current;
       lazyLoadConversation(currentConvoId, currentConversation.messages.length);
+
+      if (currlength > prevlength) {
+        containerDiv.current.scrollTo(
+          0,
+          scrollHeight / (5.1 * (prevlength / currlength))
+        );
+      }
     }
   };
 
   useEffect(() => {
     bottomDiv.current.scrollIntoView();
-  },[currentConversation]);
+  }, [lastItem]);
+
+  useEffect(() => {
+    setCurrLength(currentConversation.messages.length);
+  }, [currentConversation.messages.length]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(callbackFunction, options);
@@ -63,6 +88,11 @@ export default function Mails({ x }) {
           return (
             <section
               key={index}
+              ref={
+                index === currentConversation.messages.length / 2
+                  ? latestRef
+                  : null
+              }
               className={styles.message}
               style={{
                 textAlign:
