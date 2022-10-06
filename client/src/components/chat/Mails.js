@@ -124,7 +124,7 @@ export default function Mails({ x }) {
                     );
                   })}
               </section>
-              <p>{new Date(message.dateCreated).toISOString()}</p>
+              <p className={styles.Date}>{new Date(message.dateCreated).toISOString()}</p>
             </section>
           );
         })
