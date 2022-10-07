@@ -31,7 +31,7 @@ const io = new Server(server, {
   cors: { origin: process.env.CLIENT_ORIGIN, methods: ["GET", "POST"] }, // instantiate socket.io server with cors
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 
 let onlineUsers = []; // list of online users
 let emailListeners = [];
