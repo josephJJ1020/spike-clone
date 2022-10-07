@@ -57,7 +57,7 @@ const fetchEmailFromTo = async (
                     let filesList = [];
                     const headersTo = [...to.value];
 
-                    const participants = [
+                    let participants = [
                       ...from.value.map((user) => {
                         return { email: user.address };
                       }),
@@ -65,6 +65,8 @@ const fetchEmailFromTo = async (
                         return { email: user.address };
                       }),
                     ];
+
+                    participants = [...new Set(participants)]
 
                     // if there are attachments, upload them to server
                     if (attachments) {
