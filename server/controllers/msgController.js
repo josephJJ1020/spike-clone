@@ -108,9 +108,13 @@ const msgController = {
 
   getConversationByParticipants: async (participants) => {
     try {
-      return await Conversation.findOne({
+      const newConvo = await Conversation.findOne({
         participants: { $size: participants.length, $all: participants },
       });
+
+      if (newConvo) {
+        return newConvo;
+      }
     } catch (err) {
       console.log(err.message);
     }
