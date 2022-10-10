@@ -44,7 +44,7 @@ const msgController = {
           },
         },
       },
-    ]);
+    ])
   },
 
   lazyLoadConversation: async (convoId, latestLimit) => {
@@ -103,7 +103,7 @@ const msgController = {
     //   },
     // ]);
 
-    return newConvo[0];
+    if (newConvo) return newConvo[0];
   },
 
   getConversationByParticipants: async (participants) => {
@@ -117,6 +117,39 @@ const msgController = {
       }
     } catch (err) {
       console.log(err.message);
+    }
+  },
+
+  getConversationsByIdentifier: async () => {
+    return [...(await Conversation.find({}, { identifier: 1 }))];
+  },
+
+  // makes new conversation (with messages); run in fetchEmail.js
+  makeConversationWithMessages: async (identifier, participants, messages) => {
+    const newConvo = new Conversation({
+      identifier,
+      dateCreated: Date.now(),
+      participants,
+      messages,
+    });
+
+    await newConvo.save();
+    return newConvo;
+  },
+
+  // add message to conversation; run in fetchEmail.js
+  AddMessageToConversation: async (identifier, message) => {
+    const convo = await Conversation.findOne({ identifier: identifier });
+
+    if (convo) {
+      if (convo.messages.find((msg) => msg.messageId === message.messageId)) {
+        // do nothing
+        console.log(`message with id ${message.messagId} already exists`);
+      } else {
+        convo.messages.push(message);
+
+        await convo.save();
+      }
     }
   },
 

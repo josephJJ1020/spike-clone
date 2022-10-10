@@ -65,6 +65,7 @@ io.on("connection", (socket) => {
         (listener) => listener.email === data.email
       );
       const user = await controller.searchUserForNodemailer(data.email);
+
       if (user) {
         // fetch user's existing emails and represent them as conversations
         try {
@@ -76,30 +77,37 @@ io.on("connection", (socket) => {
             password = user.password;
           }
 
-          await Promise.all([
-            fetchEmail(
-              user.email,
-              password,
-              user.inboundHost,
-              user.inboundPort,
-              user.lastFetched - 864000000, // user.lastFetched minus ten days
-              user.lastFetched,
-              io,
-              onlineUsers,
-              user.emailService === "GMAIL" ? "[Gmail]/Sent Mail" : "SENT" // error here when user is using gmail service
-            ),
-            fetchEmail(
-              user.email,
-              password,
-              user.inboundHost,
-              user.inboundPort,
-              user.lastFetched - 864000000, // user.lastFetched minus ten days
-              user.lastFetched,
-              io,
-              onlineUsers,
-              "INBOX"
-            ),
-          ]);
+          await fetchEmail(
+            user.email,
+            password,
+            user.inboundHost,
+            user.inboundPort,
+            user.lastFetched - 864000000, // user.lastFetched minus ten days
+            user.lastFetched,
+            io,
+            onlineUsers,
+            user.emailService === "GMAIL" ? "[Gmail]/Sent Mail" : "SENT"
+          );
+
+          await fetchEmail(
+            user.email,
+            password,
+            user.inboundHost,
+            user.inboundPort,
+            user.lastFetched - 864000000, // user.lastFetched minus ten days
+            user.lastFetched,
+            io,
+            onlineUsers,
+            "INBOX"
+          );
+
+          // code below should be executed after fetching emails
+          const conversations = await msgController.getUserConversations(user.email);
+
+          // send user conversations after fetching emails
+          io.to(socket.id).emit("load-conversations", conversations);
+
+          console.log("sent conversations on socket connection");
         } catch (err) {
           console.log(err.message);
         }

@@ -47,14 +47,9 @@ export default function Mails({ x }) {
     const [entry] = entries;
 
     if (entry.isIntersecting) {
-      const { scrollHeight } = containerDiv.current;
       lazyLoadConversation(currentConvoId, currentConversation.messages.length);
 
       if (currlength > prevlength) {
-        // containerDiv.current.scrollTo(
-        //   0,
-        //   scrollHeight / (5.1 * (prevlength / currlength))
-        // );
         latestRef.current.scrollIntoView();
       }
     }
@@ -99,11 +94,13 @@ export default function Mails({ x }) {
               className={styles.message}
               style={{
                 textAlign:
-                  message.from.email !== userData.email ? "left" : "right",
+                  message.from && message.from.email !== userData.email
+                    ? "left"
+                    : "right",
               }}
             >
               <strong>
-                {message.from.email === userData.email
+                {!message.from || message.from.email === userData.email
                   ? "You"
                   : message.from.email}
               </strong>
@@ -124,7 +121,9 @@ export default function Mails({ x }) {
                     );
                   })}
               </section>
-              <p className={styles.Date}>{new Date(message.dateCreated).toISOString()}</p>
+              <p className={styles.Date}>
+                {new Date(message.dateCreated).toISOString()}
+              </p>
             </section>
           );
         })

@@ -44,6 +44,9 @@ const fetchEmailFromTo = async (
             ],
             (err, results) => {
               const f = imap.fetch(results, { bodies: "" });
+
+              let msgArray = []; // array of messages
+
               f.on("message", (msg) => {
                 msg.on("body", (stream) => {
                   simpleParser(stream, async (err, parsed) => {
@@ -57,16 +60,33 @@ const fetchEmailFromTo = async (
                     let filesList = [];
                     const headersTo = [...to.value];
 
-                    let participants = [
-                      ...from.value.map((user) => {
-                        return { email: user.address };
-                      }),
-                      ...headersTo.map((user) => {
-                        return { email: user.address };
-                      }),
-                    ];
+                    let fromValue = from.value.map((user) => {
+                      return { email: user.address };
+                    });
 
-                    participants = [...new Set(participants)]
+                    let toValue = headersTo.map((user) => {
+                      return { email: user.address };
+                    });
+
+                    let participants = [...fromValue, ...toValue];
+
+                    // remove duplicates
+                    participants = participants.reduce((unique, o) => {
+                      if (
+                        !unique.some(
+                          (obj) =>
+                            obj.email === o.email && obj.value === o.value
+                        )
+                      ) {
+                        unique.push(o);
+                      }
+                      return unique;
+                    }, []);
+
+                    // sort
+                    participants = participants.sort((a, b) =>
+                      a.email.localeCompare(b.email)
+                    );
 
                     // if there are attachments, upload them to server
                     if (attachments) {
@@ -92,69 +112,18 @@ const fetchEmailFromTo = async (
                       });
                     }
 
-                    let newConvo;
+                    // init message object
+                    let message = {
+                      from: fromValue[0],
+                      to: toValue,
+                      content: content,
+                      files: filesList,
+                      messageId: headers.get("message-id"),
+                      dateCreated: Date.parse(headers.get("date")),
+                    };
 
-                    // check if convo with participants already exists
-                    const convo =
-                      await msgController.getConversationByParticipants(
-                        participants
-                      );
-
-                    // if convo doesn't exist, make new one
-                    if (!convo) {
-                      newConvo = await msgController.addMessage(
-                        {
-                          email: participants[0].email,
-                        },
-                        {
-                          content: content,
-                          to: participants.slice(1),
-                        },
-                        null,
-                        filesList,
-                        headers.get("message-id"),
-                        Date.parse(headers.get("date"))
-                      );
-                    }
-
-                    // check if message exists in convo (use id or mail.messagId?)
-                    // if it doesn't then add message
-                    else if (
-                      convo.messages.find(
-                        (message) =>
-                          message.id === headers.get("message-id") ||
-                          message.content === content
-                      )
-                    ) {
-                      // console.log("message already exists");
-                    } else {
-                      newConvo = await msgController.addMessage(
-                        {
-                          email: participants[0].email,
-                        },
-                        {
-                          content: content,
-                        },
-                        convo._id,
-                        filesList,
-                        headers.get("message-id"),
-                        Date.parse(headers.get("date"))
-                      );
-
-                      // lastly, emit new-message event to all online users
-
-                      onlineUsers.forEach((user) => {
-                        if (
-                          newConvo.participants.some(
-                            (participant) => participant.email === user.email
-                          )
-                        ) {
-                          socket
-                            .to(user.socketId)
-                            .emit("new-message", newConvo);
-                        }
-                      });
-                    }
+                    // push message object to message array
+                    msgArray.push({ participants, message });
 
                     await userController.setUserLastFetched(
                       email,
@@ -166,8 +135,74 @@ const fetchEmailFromTo = async (
               f.once("error", (ex) => {
                 return Promise.reject(ex);
               });
-              f.once("end", () => {
-                console.log("Done fetching all messages!");
+              f.once("end", async () => {
+                // note: don't use identifier, just use participants
+
+                // init user conversations/email threads
+                let actualData = {};
+
+                // init array of messages to append to existing conversation/email thread
+                let messagesToBePushedOnly = [];
+
+                // fetch conversations' identifiers (conversation Ids) from db
+                let conversationIdsFromDb =
+                  await msgController.getConversationsByIdentifier();
+
+                conversationIdsFromDb = conversationIdsFromDb.map(
+                  (convo) => convo.identifier
+                );
+
+                // loop through each message object in message array
+                for (const data of msgArray) {
+                  const identifier = data.participants
+                    .map((user) => user.email)
+                    .join(",");
+
+                  // if conversation already exists in db, just add message to conversation
+                  if (conversationIdsFromDb.includes(identifier)) {
+                    messagesToBePushedOnly.push({
+                      identifier,
+                      message: data.message,
+                    });
+
+                    // if conversation doesn't exist in db, run code below
+                  } else {
+                    // if convo exists already from fetch, just push the message into convo
+                    if (actualData[identifier]) {
+                      actualData[identifier].messages.push(data.message);
+                    } else {
+                      // if not, create new conversation
+                      actualData[identifier] = {
+                        identifier,
+                        participants: data.participants,
+                        messages: [data.message],
+                      };
+                    }
+                  }
+                }
+
+                for (const key in actualData) {
+                  const data = actualData[key];
+                  // store conversation in database
+
+                  await msgController.makeConversationWithMessages(
+                    data.identifier,
+                    data.participants,
+                    data.messages
+                  );
+                }
+
+                for (const message of messagesToBePushedOnly) {
+                  // add new message to existing conversation
+                  await msgController.AddMessageToConversation(
+                    message.identifier,
+                    message.message
+                  );
+                }
+
+                console.log(
+                  `total conversations: ${Object.keys(actualData).length}`
+                );
                 imap.end();
               });
             }

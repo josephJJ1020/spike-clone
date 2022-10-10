@@ -3,7 +3,7 @@ import Conversation from "./Conversation";
 import styles from "./Sidebar.module.css";
 
 export default function Conversations() {
-  // const { conversations } = useContext(AppContext);
+  
   const { conversations } = useSelector((state) => state.conversations);
   return (
     <section className={styles.Conversations}>

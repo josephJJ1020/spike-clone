@@ -1,12 +1,15 @@
 const mongoose = require("mongoose");
 
 const Conversation = new mongoose.Schema({
+  identifier: {
+    type: String,
+    default: ''
+  },
   dateCreated: {
     type: Date,
     default: Date.now(),
   },
   participants: {
-    // stores user Ids
     type: [],
     default: [],
     required: "Conversation must include participants",
