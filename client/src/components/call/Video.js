@@ -18,6 +18,7 @@ export function Video() {
         className={styles.CallVideo}
         autoPlay
         muted={true}
+       
       ></video>
       <p>You</p>
     </section>
@@ -25,7 +26,9 @@ export function Video() {
 }
 
 export function RemoteVideo() {
-  const { remoteCaller, callee } = useSelector((state) => state.callState);
+  const { remoteCaller, callee } = useSelector(
+    (state) => state.callState
+  );
   const remoteVideoRef = useRef();
 
   useEffect(() => {
@@ -34,7 +37,12 @@ export function RemoteVideo() {
 
   return (
     <section>
-      <video ref={remoteVideoRef} className={styles.CallVideo} autoPlay></video>
+      <video
+        ref={remoteVideoRef}
+        className={styles.CallVideo}
+        autoPlay
+        
+      ></video>
 
       <p>{callee ? callee : remoteCaller}</p>
     </section>
