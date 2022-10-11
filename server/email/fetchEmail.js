@@ -28,7 +28,7 @@ const fetchEmailFromTo = async (
     tls: true,
   };
 
-  const getEmails = () => {
+  const getEmails = async () => {
     try {
       let minLastFetched = Date.now();
 
@@ -203,6 +203,7 @@ const fetchEmailFromTo = async (
                 console.log(
                   `total conversations: ${Object.keys(actualData).length}`
                 );
+
                 imap.end();
               });
             }
@@ -217,6 +218,8 @@ const fetchEmailFromTo = async (
 
       imap.once("end", () => {
         console.log("Connection ended");
+        console.log("returning true");
+        return true;
       });
 
       imap.connect();
@@ -225,7 +228,8 @@ const fetchEmailFromTo = async (
     }
   };
 
-  getEmails();
+  await getEmails();
+  return true
 };
 
 module.exports = fetchEmailFromTo;

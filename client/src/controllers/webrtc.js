@@ -2,7 +2,12 @@ let remoteReceiver;
 let peerConnection;
 let localStream;
 let remoteStream;
+let turnServers = [];
 let iceCandidateQueue = [];
+
+export const setTURNServers = (servers) => {
+  turnServers = servers;
+};
 
 export const createPeerConnection = async (
   socket,
@@ -15,7 +20,9 @@ export const createPeerConnection = async (
       {
         url: "stun:stun.1und1.de:3478",
       },
+      ...turnServers,
     ],
+    iceTransportPolicy: "relay",
   });
   remoteReceiver = receiver;
 
@@ -46,7 +53,6 @@ export const createPeerConnection = async (
 
   // add local stream tracks to peer connection
   localStream = await setLocalMedia(callType);
-
 };
 
 // make offer; invoke when video call button is pressed; send to receiver, which is an email (will send if receiver is in online users)
@@ -112,7 +118,7 @@ export const addIceCandidate = async (data) => {
       iceCandidateQueue.push(data.iceCandidate);
     } else {
       iceCandidateQueue.forEach((iceCandidate) => {
-        peerConnection.addIceCandidate(iceCandidate);
+        if (iceCandidate) peerConnection.addIceCandidate(iceCandidate);
       });
     }
   }
@@ -121,9 +127,15 @@ export const addIceCandidate = async (data) => {
 // set local video; accepts peer connection from peerConnectionSlice
 export const setLocalMedia = async (callType) => {
   const localMedia = await navigator.mediaDevices.getUserMedia({
-    video: callType === "VIDEO" ? true : false,
+    // video: callType === "VIDEO" ? true : false,
+    video: true,
     audio: true,
   });
+
+  if (callType !== "VIDEO") {
+    const enabled = localMedia.getVideoTracks()[0].enabled;
+    localMedia.getVideoTracks()[0].enabled = false;
+  }
 
   localMedia.getTracks().forEach((track) => {
     peerConnection.addTrack(track, localMedia);
@@ -152,18 +164,24 @@ export const hideCam = () => {
 
 // invoke when user presses hang up button
 export const hangUp = (socket, sender, receiver, callType) => {
-  // close peer connection
-  peerConnection.close();
-  peerConnection = null;
-
   // reset local stream (enable mic and video)
   localStream.getAudioTracks()[0].enabled = true;
   if (callType === "VIDEO") {
     localStream.getVideoTracks()[0].enabled = true;
   }
 
+  localStream.getAudioTracks().forEach((track) => track.stop());
+  localStream.getVideoTracks().forEach((track) => track.stop());
+  remoteStream.getAudioTracks().forEach((track) => track.stop());
+  remoteStream.getVideoTracks().forEach((track) => track.stop());
+
   localStream = null;
   remoteStream = null;
+
+  // close peer connection
+  peerConnection.close();
+  peerConnection.onicecandidate = null;
+  peerConnection = null;
 
   sendEndCallMessage(socket, sender, receiver, callType);
 };
@@ -178,16 +196,23 @@ export const sendEndCallMessage = (socket, sender, receiver, callType) => {
 };
 
 export const handleHangUp = (callType) => {
-  peerConnection.close();
-  peerConnection = null;
-
-  // reset local stream (enable mic and video)
   localStream.getAudioTracks()[0].enabled = true;
   if (callType === "VIDEO") {
     localStream.getVideoTracks()[0].enabled = true;
   }
+  localStream.getAudioTracks().forEach((track) => track.stop());
+  localStream.getVideoTracks().forEach((track) => track.stop());
+  remoteStream.getAudioTracks().forEach((track) => track.stop());
+  remoteStream.getVideoTracks().forEach((track) => track.stop());
 
   localStream = null;
   remoteStream = null;
+
+  peerConnection.close();
+  peerConnection.onicecandidate = null;
+  peerConnection = null;
+
+  // reset local stream (enable mic and video)
+
   // do something when remote user disconnects
 };

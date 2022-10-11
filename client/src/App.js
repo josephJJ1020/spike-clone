@@ -28,6 +28,7 @@ import {
   makeOffer,
   hangUp,
   handleHangUp,
+  setTURNServers,
 } from "./controllers/webrtc";
 
 import { AddConversation } from "./components/sidebar/AddConversation";
@@ -72,7 +73,15 @@ function App() {
 
   const [connected, setConnected] = useState(false);
 
+  const getTurnServerCredentials = async () => {
+    const res = await fetch(process.env.REACT_APP_GET_TURN_CREDENTIALS_ORIGIN);
+    const data = await res.json();
+
+    setTURNServers(data.token.iceServers);
+  };
+
   useEffect(() => {
+    getTurnServerCredentials();
     // set socket listeners
     clientSocket.on("connect", () => {
       setConnected(true);

@@ -13,6 +13,7 @@ const mongoose = require("mongoose");
 
 const express = require("express");
 const app = express();
+const twilio = require("twilio");
 
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
@@ -77,7 +78,7 @@ io.on("connection", (socket) => {
             password = user.password;
           }
 
-          await fetchEmail(
+          const x = await fetchEmail(
             user.email,
             password,
             user.inboundHost,
@@ -89,7 +90,7 @@ io.on("connection", (socket) => {
             user.emailService === "GMAIL" ? "[Gmail]/Sent Mail" : "SENT"
           );
 
-          await fetchEmail(
+          const y = await fetchEmail(
             user.email,
             password,
             user.inboundHost,
@@ -101,13 +102,19 @@ io.on("connection", (socket) => {
             "INBOX"
           );
 
-          // code below should be executed after fetching emails
-          const conversations = await msgController.getUserConversations(user.email);
+          if (x && y) {
+            // code below should be executed after fetching emails
+            const conversations = await msgController.getUserConversations(
+              user.email
+            );
 
-          // send user conversations after fetching emails
-          io.to(socket.id).emit("load-conversations", conversations);
+            console.log(x);
+            console.log(y);
+            // send user conversations after fetching emails
+            io.to(socket.id).emit("load-conversations", conversations);
 
-          console.log("sent conversations on socket connection");
+            console.log("sent conversations on socket connection");
+          }
         } catch (err) {
           console.log(err.message);
         }
@@ -521,6 +528,22 @@ app.post("/login", async (req, res) => {
     // new Error("No ID, email, or password specified")
     return res.send(new Error("No ID, email, or password specified"));
   }
+});
+
+// get turn servers
+app.get("/get-turn-credentials", (req, res) => {
+  console.log("getting turn server credentials");
+  const accountSid = process.env.ACCOUNT_SID;
+  const authToken = process.env.AUTH_TOKEN;
+  const client = twilio(accountSid, authToken);
+
+  client.tokens
+    .create()
+    .then((token) => res.send({ token }))
+    .catch((err) => {
+      console.log(err);
+      res.send({ message: "failed to fetch TURN credentials", err });
+    });
 });
 
 // view message attachment
