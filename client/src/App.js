@@ -81,6 +81,7 @@ function App() {
   };
 
   useEffect(() => {
+    console.log(process.env.REACT_APP_TURN_PASSWORD)
     getTurnServerCredentials();
     // set socket listeners
     clientSocket.on("connect", () => {
