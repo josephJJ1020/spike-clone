@@ -31,15 +31,11 @@ export const createPeerConnection = async (
       // },
       //
 
-
-
       {
-        urls: `turn:${process.env.REACT_APP_TURN_IP}:4444`,
+        urls: `turn:${process.env.REACT_APP_TURN_IP}:6581`,
         username: process.env.REACT_APP_TURN_PASSWORD,
         credential: process.env.REACT_APP_TURN_PASSWORD,
       },
-      
-
 
       // {
       //   urls: "turn:openrelay.metered.ca:443",
