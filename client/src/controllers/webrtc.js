@@ -32,7 +32,8 @@ export const createPeerConnection = async (
       //
 
       {
-        urls: `turn:${process.env.REACT_APP_TURN_IP}:6581`,
+        // urls: `turn:${process.env.REACT_APP_TURN_IP}:6581`,
+        urls: `turn:143.198.122.46:6581`,
         username: process.env.REACT_APP_TURN_PASSWORD,
         credential: process.env.REACT_APP_TURN_PASSWORD,
       },

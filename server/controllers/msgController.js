@@ -144,7 +144,7 @@ const msgController = {
     if (convo) {
       if (convo.messages.find((msg) => msg.messageId === message.messageId)) {
         // do nothing
-        console.log(`message with id ${message.messagId} already exists`);
+        // console.log(`message with id ${message.messagId} already exists`);
       } else {
         convo.messages.push(message);
 
