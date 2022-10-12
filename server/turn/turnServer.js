@@ -4,10 +4,11 @@ const Turn = require("node-turn");
 const server = new Turn({
   // options
   authMech: "none",
-  listeningPort: 4444,
+  listeningPort: 6581,
   credentials: {
     [process.env.TURN_PASSWORD]: process.env.TURN_PASSWORD,
   },
+  debugLevel: "INFO",
 });
 
 module.exports = server;
