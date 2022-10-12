@@ -6,7 +6,7 @@ const server = new Turn({
   authMech: "none",
   listeningPort: 4444,
   credentials: {
-    username: process.env.TURN_PASSWORD,
+    [process.env.TURN_PASSWORD]: process.env.TURN_PASSWORD,
   },
 });
 
