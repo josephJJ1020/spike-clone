@@ -15,14 +15,44 @@ export const createPeerConnection = async (
   receiver,
   callType
 ) => {
+  // console.log(turnServers);
   peerConnection = new RTCPeerConnection({
     iceServers: [
+      // {
+      //   url: "stun:stun.1und1.de:3478",
+      // },
+      // {
+      //   urls: "stun:openrelay.metered.ca:80",
+      // },
+      // {
+      //   urls: "turn:openrelay.metered.ca:80",
+      //   username: "openrelayproject",
+      //   credential: "openrelayproject",
+      // },
+      //
       {
-        url: "stun:stun.1und1.de:3478",
+        urls: `turn:${process.env.REACT_APP_TURN_IP}:3478`,
+        username: process.env.REACT_APP_TURN_PASSWORD,
+        credential: process.env.REACT_APP_TURN_PASSWORD,
       },
-      ...turnServers,
+      // {
+      //   urls: "turn:openrelay.metered.ca:443",
+      //   username: "openrelayproject",
+      //   credential: "openrelayproject",
+      // },
+      // {
+      //   urls: "turn:openrelay.metered.ca:80?transport=tcp",
+      //   username: "openrelayproject",
+      //   credential: "openrelayproject",
+      // },
+      // {
+      //   urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      //   username: "openrelayproject",
+      //   credential: "openrelayproject",
+      // },
+      // ...turnServers,
     ],
-    iceTransportPolicy: "relay",
+    // iceTransportPolicy: "relay",
   });
   remoteReceiver = receiver;
 

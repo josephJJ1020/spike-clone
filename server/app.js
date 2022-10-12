@@ -17,6 +17,7 @@ const twilio = require("twilio");
 
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
+const turnServer = require('./turn/turnServer')
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,6 +28,9 @@ require("dotenv").config();
 // mongoose connection; connect mongoose to MongoDB database
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOOSE_URI);
+
+// start turn server
+turnServer.start()
 
 const io = new Server(server, {
   cors: { origin: process.env.CLIENT_ORIGIN, methods: ["GET", "POST"] }, // instantiate socket.io server with cors
