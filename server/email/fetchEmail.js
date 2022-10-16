@@ -104,7 +104,7 @@ const fetchEmailFromTo = async (
                           // add filename and file link to filesList array (to store later in database inside the message object)
                           filesList.push({
                             filename: file.filename,
-                            fileLink: `${process.env.SERVER_URI}/${file.filename}`,
+                            fileLink: `https://earl-server.zapto.org/api/${file.filename}`,
                           });
                         } catch (err) {
                           console.log(err);
@@ -229,7 +229,7 @@ const fetchEmailFromTo = async (
   };
 
   await getEmails();
-  return true
+  return true;
 };
 
 module.exports = fetchEmailFromTo;

@@ -35,6 +35,8 @@
   margin-bottom: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
+  /* box-shadow: 0 1px rgb(77, 77, 77); */
+  box-shadow: 0 1px white;
 }
 
 .Conversation:hover {

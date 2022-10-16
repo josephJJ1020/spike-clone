@@ -17,7 +17,7 @@ const twilio = require("twilio");
 
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
-const turnServer = require('./turn/turnServer')
+const turnServer = require("./turn/turnServer");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,10 +30,13 @@ mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOOSE_URI);
 
 // start turn server
-turnServer.start()
+turnServer.start();
 
 const io = new Server(server, {
-  cors: { origin: process.env.CLIENT_ORIGIN, methods: ["GET", "POST"] }, // instantiate socket.io server with cors
+  cors: {
+    origin: [process.env.CLIENT_ORIGIN, "http://192.168.1.6:3000"],
+    methods: ["GET", "POST"],
+  }, // instantiate socket.io server with cors
 });
 
 const PORT = process.env.PORT || 5000;
@@ -343,6 +346,35 @@ io.on("connection", (socket) => {
   });
 
   /* --------------------- WebRTC --------------------- */
+  //
+  socket.on("callRequest", (data) => {
+    let receiverOnline;
+
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("callRequest", data);
+      receiverOnline = true;
+    }
+
+    if (!receiverOnline) {
+      const sender = onlineUsers.find((user) => user.email === data.sender);
+
+      if (sender) {
+        io.to(sender.socketId).emit("callee-offline", data.receiver);
+      }
+    }
+  });
+
+  //
+  socket.on("callAnswer", (data) => {
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("callAnswer", data);
+    }
+  });
+
   socket.on("offer", (data) => {
     // if receiver is online, send offer to receiver's socket; else send callee-offline event
     let receiverOnline;
@@ -374,11 +406,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("add-ice-candidate", (data) => {
-    try {
-      io.to(
-        onlineUsers.find((user) => user.email === data.receiver).socketId
-      ).emit("add-ice-candidate", data);
-    } catch (err) {}
+    console.log("received ice candidate in server");
+    console.log(`ice candidates being sent to ${data.receiver}`);
+
+    const receiver = onlineUsers.find((user) => user.email === data.receiver);
+
+    console.log(`receiver found: ${receiver.email}`);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("add-ice-candidate", data);
+    }
   });
 
   socket.on("reject-offer", (data) => {
@@ -400,6 +437,14 @@ io.on("connection", (socket) => {
 
     if (receiver) {
       io.to(receiver.socketId).emit("call-unavailable", data);
+    }
+  });
+
+  socket.on("handle-disconnect", (data) => {
+    let receiver = onlineUsers.find((user) => user.email === data.sender);
+
+    if (receiver) {
+      io.to(receiver.socketId).emit("handle-disconnect", data);
     }
   });
 
@@ -432,7 +477,9 @@ io.on("connection", (socket) => {
     }
 
     // update onlineUsers for each email listener in emailListeners array
-
+    onlineUsers.forEach((user) => {
+      io.to(user.socketId).emit("onlineUsers", onlineUsers);
+    });
     emailListeners.forEach((listener) => {
       listener.setOnlineUsers(onlineUsers);
     });
@@ -560,4 +607,4 @@ app.use((req, res) => {
   res.send("Nothing to see here :)");
 });
 
-server.listen(PORT, console.log(`listening on port ${PORT}`));
+server.listen(PORT, "0.0.0.0", console.log(`listening on port ${PORT}`));

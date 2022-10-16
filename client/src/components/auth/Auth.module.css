@@ -66,6 +66,7 @@
 .SignUpForm select {
   max-width: 600px;
   width: 90%;
+  text-align: center;
 }
 
 .SignUpForm input[type="submit"] {

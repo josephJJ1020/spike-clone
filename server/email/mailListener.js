@@ -98,7 +98,7 @@ class EmailListener {
 
                 filesList.push({
                   filename: file.fileName,
-                  fileLink: `${process.env.SERVER_URI}/${file.fileName}`,
+                  fileLink: `https://earl-server.zapto.org/api/${file.fileName}`,
                 });
               } catch (err) {
                 console.log(err);

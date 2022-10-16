@@ -20,12 +20,13 @@ import PageNotFound from "./components/PageNotFound";
 import FlashMessage from "./components/flash/FlashMessage";
 
 import {
-  acceptOffer,
-  acceptAnswer,
+  makeCall,
+  acceptCallRequest,
+  handleAcceptCall,
+  handleOfferAndSendAnswer,
+  handleAnswer,
   addIceCandidate,
   rejectOffer,
-  handlePreOffer,
-  makeOffer,
   hangUp,
   handleHangUp,
   setTURNServers,
@@ -94,6 +95,15 @@ function App() {
     clientSocket.on("disconnect", () => {
       setConnected(false);
     });
+
+    clientSocket.on('connect_error', () => {
+      console.log("can't connect to server")
+      setConnected(false)
+    })
+
+    clientSocket.on('connect_failed', () => {
+      console.log("can't connect to server")
+    })
 
     if (userData) {
       clientSocket.emit("user-connection", {
@@ -194,43 +204,57 @@ function App() {
     });
 
     /* --------------------- WebRTC --------------------- */
-
-    // when user receives an offer from a caller
-    clientSocket.on("offer", async (data) => {
-      // if user is on call, emit call-unavailable event to caller
+    // when user receives a call request
+    clientSocket.on("callRequest", (data) => {
       if (onCall) {
         clientSocket.emit("call-unavailable", {
           sender: userData.email,
           receiver: data.sender,
         });
       } else {
-        // set remote description and set call states
-        await handlePreOffer(clientSocket, data);
         dispatch(setRemoteCaller(data.sender));
         dispatch(setReceivingOffer(true));
-        dispatch(setOffer(data.offer));
         dispatch(setCallType(data.callType));
       }
     });
 
-    // if user is the caller and receives and answer
-    clientSocket.on("answer", async (data) => {
-      // set remote description and set call states
-      await acceptAnswer(clientSocket, data);
+    // when user's call request is accepted
+    clientSocket.on("callAnswer", async (data) => {
+      console.log(data.callType);
+      await handleAcceptCall(
+        clientSocket,
+        userData.email,
+        data.sender,
+        data.callType
+      );
 
       dispatch(setAccepted(true));
       dispatch(setIsCalling(false));
       dispatch(setOnCall(true));
     });
 
+    // when user receives an offer from a caller
+    clientSocket.on("offer", async (data) => {
+      await handleOfferAndSendAnswer(
+        clientSocket,
+        data,
+        userData.email,
+        callType
+      );
+      dispatch(setOffer(data.offer));
+    });
+
+    // if user is the caller and receives and answer
+    clientSocket.on("answer", async (data) => {
+      // set remote description and set call states
+      await handleAnswer(data);
+    });
+
     // when user receives ice candidates, add it to peer connection
     clientSocket.on("add-ice-candidate", async (data) => {
+      console.log("received ice candidate from server");
       if (data.iceCandidate) {
-        try {
-          await addIceCandidate(data);
-        } catch (err) {
-          console.log(err.message);
-        }
+        await addIceCandidate(data);
       }
     });
 
@@ -266,6 +290,15 @@ function App() {
       dispatch(setCallType(null));
     });
 
+    // when other user disconnects not using the end call button (when tab is closed, internet cut off, etc.)
+    clientSocket.on("handle-disconnect", (data) => {
+      dispatch(setOnCall(false));
+      dispatch(setCallee(null));
+      dispatch(setErrMsg("Other user disconnected"));
+      dispatch(setCallType(null));
+      handleHangUp(data.callType);
+    });
+
     return () => {
       // turn off listeners to prevent listeners from emitting the same events multiple times
       clientSocket.off("load-conversations");
@@ -275,14 +308,17 @@ function App() {
       clientSocket.off("accept-friend-request");
       clientSocket.off("reject-friend-request");
 
+      clientSocket.off("callRequest");
+      clientSocket.off("callAnswer");
       clientSocket.off("offer");
       clientSocket.off("answer");
       clientSocket.off("add-ice-candidate");
       clientSocket.off("callee-offline");
       clientSocket.off("reject-offer");
       clientSocket.off("call-ended");
+      clientSocket.off("handle-disconnect");
     };
-  }, [userData, dispatch, conversations, errMsg, onCall]);
+  }, [userData, dispatch, conversations, errMsg, onCall, callType]);
 
   // send new message to conversation
   const sendMessage = (message, files) => {
@@ -327,8 +363,11 @@ function App() {
       dispatch(setCallee(receiver));
       dispatch(setIsCalling(true));
 
-      // send webrtc offer to callee
-      makeOffer(clientSocket, userData.email, receiver, "VIDEO");
+      // // send webrtc offer to callee
+      // makeOffer(clientSocket, userData.email, receiver, "VIDEO");
+
+      // make call request
+      makeCall(clientSocket, userData.email, receiver, "VIDEO");
     }
   };
 
@@ -341,8 +380,8 @@ function App() {
       dispatch(setCallee(receiver));
       dispatch(setIsCalling(true));
 
-      // send webrtc offer to callee
-      makeOffer(clientSocket, userData.email, receiver, "VOICE");
+      // make call request
+      makeCall(clientSocket, userData.email, receiver, "VOICE");
     }
   };
 
@@ -359,12 +398,8 @@ function App() {
 
   // when user wants to accept call offer from remote
   const acceptCall = async (receiver) => {
-    // set remote description
-    await acceptOffer(
-      clientSocket,
-      { offer: offer, receiver: receiver },
-      userData.email
-    );
+    // accept call
+    await acceptCallRequest(clientSocket, userData.email, receiver, callType);
 
     // set call state
     dispatch(setOnCall(true));
@@ -398,14 +433,13 @@ function App() {
       <Router>
         <main className="App">
           <TopNav />
-
           <AddConversation />
           <Calling />
           <Error />
           <ReceivingCall />
           <CallScreen />
           {flashMsg && <FlashMessage />}
-
+          
           <Routes>
             <Route path="/" element={userId ? <HomePage /> : <LandingPage />} />
             <Route

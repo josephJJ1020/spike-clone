@@ -48,7 +48,7 @@ export default function MailForm({ participants, receiverEmail }) {
 
   return (
     <form className={styles.MailForm}>
-      {!participants || participants.length < 2 ? (
+      {!participants || participants.length === 2 ? (
         <div className={styles.CallButtons}>
           <button
             className={styles.callButton}

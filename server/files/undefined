@@ -1,0 +1,82 @@
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WnIE7B6jHCSle/42B6Gv2bJlvWVMF4Ip0M5EJ3VvzBHkjS+tqMpWknGb+/MdRWRzPTme8lUtviixq3RGENmgXZxufxfaN6l+F+JAxf6vIXc5uFWgOtlGdwCJsIysZnDhCqwRnpgu6VS9kXWYl3B8e4pzSKwfvu53pYHrAhuR6E7aMY8Wcavqj2HoKndvbNvbPn1vS7iP0nDGj5eOyOaHYYQUKIXaLuNBbXN9g67MFmvP7S6iLuP7/zEaX3pUU70RqMHGOP9RdLt/HToZTp/tc2ptKlU5nrQrSosfgUlSCANzAyEGc3LJoySZ0ZEEdM5y+8jCGquRYudnvjwk1NvDIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=peYZzgjkuGTmQ02NjnW3YgWx7Mvnt38Q5CzUoP3xkDs=;
+ b=m20XNfqPjqjwo6Lnbw2d+Z1XrE8lFyBqPGWX2No9E3tBWRmh/OQgwybVSznQUkwVVcWVxFbB/qB2BwkfYXHG0jtpd/I+VqD85bgUnUF//1gNmnG/XFudTnnanWInGhnRk/czzuyHoSufHzJpF8nfEGJANGcjAoNtmCEONQvvGZXPgzFD/lMeKnx4pX5kAYZxAqD/Sv7Qq6LLXySAce6u0Qv1tDuknjhpiwz7zzzF2GFa2pAADZXJoaBmecLQlMM2XUYLWCqySjJ9GBss83Az5FQ997LKHalkQgthgTtkCsUZojl/Zes0B/Tge44Aee/xSxBsQ6R8dk9WNCgzVrVbhg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=peYZzgjkuGTmQ02NjnW3YgWx7Mvnt38Q5CzUoP3xkDs=;
+ b=qyMVnskHO9lfNeP5PYp7oRGSQlKukMuKWPQmIMhlarcArBwsbk3L6084QWyRxVy8o9+8js4kaHmnGm1r8aZxywKNPhNL4s/Q3QBRMvlErmLQg90yG2cGuDeGK236chBHKHz60VLtT0pL505Sp7xrCLRvgdpIJoagoVKtIxeWuAXyeJxvbTRTnjoJFzKXr0C90Mz4vSaCalUl64b0A2ypUaYE2LV88aW3jcVLbVlBuHsJqqLKmSy/c654/yi3L0faJAG+q4j0stKJksEUleUhNrfjCvUCr90+EhR59DvD4O54NU10vu07C+d2UY8YDyBN/OoMICWYwetWcJ+qhfZlxA==
+Received: from SEYPR01MB4557.apcprd01.prod.exchangelabs.com
+ (2603:1096:101:84::5) by SEYPR01MB4854.apcprd01.prod.exchangelabs.com
+ (2603:1096:101:c1::7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5654.25; Wed, 28 Sep
+ 2022 18:03:18 +0000
+Received: from SEYPR01MB4557.apcprd01.prod.exchangelabs.com
+ ([fe80::8960:1146:be61:da7e]) by SEYPR01MB4557.apcprd01.prod.exchangelabs.com
+ ([fe80::8960:1146:be61:da7e%6]) with mapi id 15.20.5654.025; Wed, 28 Sep 2022
+ 18:03:18 +0000
+Content-Type: text/plain; charset=utf-8
+To: tmq.earl.f@gmail.com
+Subject: Hello from Node.js
+Message-ID: <SEYPR01MB45576C8EEAE71A8C554940BD9B549@SEYPR01MB4557.apcprd01.prod.exchangelabs.com>
+Content-Transfer-Encoding: 7bit
+Date: Wed, 28 Sep 2022 18:03:14 +0000
+From:
+X-TMN: [8rZFZdWb6f+28mybbNO3o9Fljd3PD7gG]
+X-ClientProxiedBy: SG2PR01CA0127.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:40::31) To SEYPR01MB4557.apcprd01.prod.exchangelabs.com
+ (2603:1096:101:84::5)
+Return-Path: the.josephfernando@outlook.com
+X-Microsoft-Original-Message-ID: <943b7d06-c855-a19b-1fae-1a362e8be2b4@localhost>
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEYPR01MB4557:EE_|SEYPR01MB4854:EE_
+X-MS-Office365-Filtering-Correlation-Id: 61843354-46ae-4254-0578-08daa17bb89d
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+ FmgH6X3kSgpQY9m3Y8GmPcOHn+A+VgM3zTk0LU7Jmk9XrTheyOaxl+5WCe2FDasNDrdhZqTfoJDu1biBGFPj5uhRH2QCUkMTl107o+6IR+bPOsMsV+6OiqF7ANrfunNRtN/ANldYuqtzfe1MI2i/wtN5c6L59LjOe97yvmp6Z8rO84muZGJPCicrrV6xigCCboxEu2/JmZl6PdPRXpfKXhAH7nVbwH05VH4VFYsvVwBt5E3apXelUcfXQU3RT3UZ1sOo5opUZxzkdBO+Y9MLpAiAtzfZCxjbLW59vyo9265Z/bUJTl5a8sxZk6VggnTjKiMrbQs5MiNReidN7Qrws+aHo6yzbLRXnrMbdjCmIOw8fxSAMZq85N5c73VjqwDQolMXQGsfR3j6lQcmCumlwNm1EdIlOkc1lu2f+ngh2Ak1Yp592/rYKqig8sEjF6ToADf1AU1BkyG3HQGWWSCJ/6eqF7+uTEHVLVog/K7k8+qf1dWUWfu+btzVH9X9poumQXGLh/961JsBqjx7WLeZl1q2YELGHQveJH+POIvL0kUOWUQSMlbOAYLhnaFp+DrjAET1hTxmJVWlawG+maQ+hquDD8zOuq41zJlxrPH8eeb1dKN5Qxr/vrJyQ/wsI1JVPxaci/+8iATZNZ2FKOPTOCo3Jc2ft3MOw2TfT2meiFxggWCvceRKnb8pyqORt3HM
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ =?us-ascii?Q?plBsuoDyiesa08ltDongEo0ksDC2Q4RYwHWk8FnMqr5jA0KwkpnwA9H2Hj/z?=
+ =?us-ascii?Q?xlL24vFQUk5G9wJqf/SrQfGOw5apUmy8bNIFN794FGW5TX8Gc4zXWAjIpS7a?=
+ =?us-ascii?Q?fjs8J+7xQhwo2yyXudZhZ69tIweRWZHnLqGkiuS1Ao/NR5MPb+sCW0W8OpjF?=
+ =?us-ascii?Q?iZgecfeHNhNvD0qi5fQ4P25PrdZ+iYEP+RsubgOkLnHYyI5D2d3PyLfxiiRh?=
+ =?us-ascii?Q?HOFtmaGCkTofraH0baf0ndhf4rMeEBUWxOtvHCjgwiU5Rz1HB+fUyNdmWMsM?=
+ =?us-ascii?Q?VhfIQjMoCQc17gRSt0VQbox938vwwDZkw2c4al46+TVPegi6CVmkmehbRO9s?=
+ =?us-ascii?Q?N3BZtmFx1o6qoRYnFMdpoPFRVU7FJ429Z/rRHQTjRO4TgeutyJ0ucQUheNpC?=
+ =?us-ascii?Q?ElvI8+uDA72dp9/SEudnDJyzbfKxU2PxH5n12L/H1TCVB7eRtBMDKLTjHfl7?=
+ =?us-ascii?Q?ULWICF0Zqu2+IyUZ9h7DrYb+p4nBdGi0+5fEKDuWYqoZmXCXHTiUcDdij+/5?=
+ =?us-ascii?Q?kYJAsYqXGW+MIvxni4/XIqVeoVGAg9KUf7yDaT41fj7RR/RQDZgjB6c2a/Xx?=
+ =?us-ascii?Q?5jN7Kcl7NKSLKfQQEXGZzDJ4fnpQFJU3+QSGLucgsxfqfTWFye1r610B4STc?=
+ =?us-ascii?Q?LKX8o6oi6dhj+XeIdgOuv70DDlhmqKUf/yKVoOdN8cK65QqCjZHx21yWbJgm?=
+ =?us-ascii?Q?YWB2BwVcW+QC+DC/5GQ4z3U0LFRpkS88tRv/vndyBzhieYWndAPDb8T6VNNr?=
+ =?us-ascii?Q?l3iPAcSHG1/3kalL6rFtkVCXvwrWnenvH9d32CcDdqoIyz9aygntZpuuJWZj?=
+ =?us-ascii?Q?v4OOQcW5hz+fZrpgmP11eq98Dpbhax9Ct0LZj8202WcpudgmjAULHMyCI9pJ?=
+ =?us-ascii?Q?eFMlOgGOtPqGbIk1qsTLyzPY1+yrP4diUbL/WmTATBQgIl6bSYpqI8RQtdRS?=
+ =?us-ascii?Q?J9JnWrAv8uNCfSCfKfVNlqfoRIYrub3XoN8zaOS5f2Z4zeZ+sX3GevB+69Bd?=
+ =?us-ascii?Q?RDZ4IWkFhAssj95UKV20ru5L+CKNL9yje/PZ0/DVnmXdXelsrC58484x+gJs?=
+ =?us-ascii?Q?qc6oDpED0UsyTwo2CNqK0XzmcaqqPQXv5CeH8XPQebJtVGicGn/d9XER6RHq?=
+ =?us-ascii?Q?bf2ML/JArb+xU0C/NuDYayoYajq1dkissKUtlVSwETLzEZPmoigzqKbzflDq?=
+ =?us-ascii?Q?vA7vHqMVXUbqdrvqHfSDb/yzZ0wZTVgpyGdzN2bxyTY3fOg+R29TItK5J5V7?=
+ =?us-ascii?Q?Ufaimuj96Dsx1Jqg8TUKPutzv9ILg8KwR54ERioEJjz1PKfsbm3cbUl/64X1?=
+ =?us-ascii?Q?+YU=3D?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 61843354-46ae-4254-0578-08daa17bb89d
+X-MS-Exchange-CrossTenant-AuthSource: SEYPR01MB4557.apcprd01.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2022 18:03:18.0443
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+ 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR01MB4854
+MIME-Version: 1.0
+
+Email with nodemailer

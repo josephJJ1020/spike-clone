@@ -32,7 +32,11 @@ export function RemoteVideo() {
   const remoteVideoRef = useRef();
 
   useEffect(() => {
-    remoteVideoRef.current.srcObject = getRemoteStream();
+    setTimeout(() => {
+      remoteVideoRef.current.srcObject = getRemoteStream();
+      console.log(remoteVideoRef.current.srcObject)
+    }, 1000)
+    
   });
 
   return (
