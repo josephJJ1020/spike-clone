@@ -8,8 +8,8 @@
   height: 100%;
 }
 
-.Contacts {
-  margin: 50px 0;
+.SideBar h2 {
+  padding: 30px 0;
 }
 
 .Conversations {
@@ -17,26 +17,24 @@
   overflow-y: scroll;
 }
 
-.Contacts,
 .Conversations {
   max-width: 100%;
-  max-height: 40%;
+  max-height: 60%;
   text-align: left;
   padding-left: 10px;
 }
 
 .Conversation {
-  width: 100%;
-  overflow: hidden;
+  width: 95%;
   height: 50px;
   display: flex;
   align-items: center;
   padding: 0 12px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   cursor: pointer;
   transition: background-color 0.3s;
+  gap: 10px;
   /* box-shadow: 0 1px rgb(77, 77, 77); */
-  box-shadow: 0 1px white;
 }
 
 .Conversation:hover {
@@ -47,68 +45,11 @@
   margin-bottom: 20px;
 }
 
-/* contact */
-.Contact {
-  max-width: calc(100% - 20px);
-  height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  overflow: hidden;
-}
-
-.Contact:hover {
-  background-color: rgb(81, 128, 129);
-}
-.onlineCircle {
-  width: 10px;
-  height: 10px;
-  background-color: green;
-  border-radius: 50%;
-}
-
-.ContactDetails {
-  width: calc(100% - 40px);
-  display: flex;
-  align-items: center;
-  word-wrap: break-word;
-}
-
-.ContactEmail {
-  word-wrap: break-word;
-}
-
-.ContactAction {
-  height: 40px;
-  width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: none;
-}
-
-.ContactAction img {
-  height: 20px;
-}
-
-.FriendRequestSent {
-  padding: 3px 10px;
-  position: absolute;
-  z-index: 1;
-  left: 100%;
-  background-color: #fa6121;
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  transform-origin: bottom left;
+.Participants {
   height: 100%;
-  animation: fadeIn 0.3s ease alternate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .CloseButton {
@@ -118,10 +59,15 @@
   display: none;
 }
 
-@keyframes fadeIn {
-  from {
-    transform: scale(0.1);
-  }
+.UnreadCount {
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media screen and (min-width: 615px) {

@@ -1,6 +1,6 @@
 import "./App.css";
 
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { AppContext } from "./context";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -43,6 +43,7 @@ import { setOnlineUsers } from "./store/slices/onlineUsersSlice";
 import {
   replaceConvo,
   setConversations,
+  setGettingConversations,
 } from "./store/slices/conversationsSlice";
 import {
   setIsCalling,
@@ -96,14 +97,14 @@ function App() {
       setConnected(false);
     });
 
-    clientSocket.on('connect_error', () => {
-      console.log("can't connect to server")
-      setConnected(false)
-    })
+    clientSocket.on("connect_error", () => {
+      console.log("can't connect to server");
+      setConnected(false);
+    });
 
-    clientSocket.on('connect_failed', () => {
-      console.log("can't connect to server")
-    })
+    clientSocket.on("connect_failed", () => {
+      console.log("can't connect to server");
+    });
 
     if (userData) {
       clientSocket.emit("user-connection", {
@@ -112,6 +113,7 @@ function App() {
       });
 
       clientSocket.emit("load-conversations", userData.email); // load conversations of user
+      dispatch(setGettingConversations(true));
     }
 
     return () => {
@@ -124,10 +126,27 @@ function App() {
 
   useEffect(() => {
     clientSocket.on("load-conversations", (data) => {
-      dispatch(setConversations(data)); // should be an array
+      dispatch(
+        setConversations(
+          data.sort((a, b) => a.identifier.localeCompare(b.identifier))
+        )
+      ); // should be an array
     });
 
     clientSocket.on("new-message", (data) => {
+      // if convo is currently opened, mark the last message as read by user and emit mark-all-read event
+      if (currentConvoId === data._id) {
+        if (
+          !data.messages[data.messages.length - 1].read.includes(userData.email)
+        ) {
+          data.messages[data.messages.length - 1].read.push(userData.email);
+        }
+
+        clientSocket.emit("mark-all-read", {
+          email: userData.email,
+          convoId: data._id,
+        });
+      }
       dispatch(replaceConvo(data)); // replaces current convo with convo with new message
       // need to set currentConvoId as well if the sender receives the new convo
     });
@@ -139,68 +158,6 @@ function App() {
     // load previous 10 messages
     clientSocket.on("lazy-load-conversation", (convo) => {
       dispatch(replaceConvo(convo));
-    });
-
-    // when user receives a friend request
-    clientSocket.on("friend-request", (data) => {
-      if (userData) {
-        const newNotifications = [...userData.notifications, data];
-
-        // add friend request notification to user's notifications and store new userData in session storage
-        sessionStorage.setItem(
-          "userDetails",
-          JSON.stringify({
-            ...userData,
-            notifications: newNotifications,
-          })
-        );
-
-        // replace current user data with new user data
-        dispatch(
-          setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
-        );
-      }
-    });
-
-    // receives new array of notifications
-    clientSocket.on("accept-friend-request", (data) => {
-      // check if there is data sent
-      if (data) {
-        if (userData) {
-          // replace user notifications in session storage
-          sessionStorage.setItem(
-            "userDetails",
-            JSON.stringify({
-              ...userData,
-              notifications: data.notifications,
-              friends: data.friends,
-            })
-          );
-          dispatch(
-            setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
-          );
-        }
-      }
-    });
-
-    // when user's friend request is rejected
-    clientSocket.on("reject-friend-request", (data) => {
-      // check if there is data sent
-      if (data) {
-        if (userData) {
-          // replace user notifications in session storage
-          sessionStorage.setItem(
-            "userDetails",
-            JSON.stringify({
-              ...userData,
-              notifications: data.notifications,
-            })
-          );
-          dispatch(
-            setUserData(JSON.parse(sessionStorage.getItem("userDetails")))
-          );
-        }
-      }
     });
 
     /* --------------------- WebRTC --------------------- */
@@ -286,7 +243,7 @@ function App() {
       // set call states; display modal saying remote is currently unavailable
       dispatch(setIsCalling(false));
       dispatch(setCallee(null));
-      dispatch(setErrMsg(`${data.sender} is currently unavailable.`));
+      dispatch(setErrMsg(`${data.sender} is unavailable for call.`));
       dispatch(setCallType(null));
     });
 
@@ -304,9 +261,6 @@ function App() {
       clientSocket.off("load-conversations");
       clientSocket.off("new-message");
       clientSocket.off("new-conversation");
-      clientSocket.off("friend-request");
-      clientSocket.off("accept-friend-request");
-      clientSocket.off("reject-friend-request");
 
       clientSocket.off("callRequest");
       clientSocket.off("callAnswer");
@@ -318,7 +272,15 @@ function App() {
       clientSocket.off("call-ended");
       clientSocket.off("handle-disconnect");
     };
-  }, [userData, dispatch, conversations, errMsg, onCall, callType]);
+  }, [
+    userData,
+    dispatch,
+    conversations,
+    errMsg,
+    onCall,
+    callType,
+    currentConvoId,
+  ]);
 
   // send new message to conversation
   const sendMessage = (message, files) => {
@@ -334,19 +296,6 @@ function App() {
       convoId: currentConvoId,
       files: files,
     });
-  };
-
-  // send friend request
-  const sendFriendRequest = (requesterId, receiverId) => {
-    clientSocket.emit("friend-request", {
-      requesterId: requesterId,
-      receiverId: receiverId,
-    });
-  };
-
-  // handle friend request
-  const friendRequestAction = (data) => {
-    clientSocket.emit("friend-request-action", data);
   };
 
   // create new conversation (TODO: should take in subject and conversation name as well)
@@ -405,7 +354,7 @@ function App() {
     dispatch(setOnCall(true));
   };
 
-  //
+  // reject call
   const rejectCall = async (receiver) => {
     await rejectOffer(clientSocket, userData.email, receiver);
   };
@@ -415,12 +364,15 @@ function App() {
     clientSocket.emit("lazy-load-conversation", { convoId, latestLimit });
   };
 
+  // mark all convo's messages as read
+  const markConvoMessagesAsRead = (email, convoId) => {
+    clientSocket.emit("mark-all-read", { email, convoId });
+  };
+
   return (
     <AppContext.Provider
       value={{
         sendMessage,
-        sendFriendRequest,
-        friendRequestAction,
         createNewConversation,
         videoCall,
         voiceCall,
@@ -428,6 +380,7 @@ function App() {
         rejectCall,
         disconnectFromCall,
         lazyLoadConversation,
+        markConvoMessagesAsRead,
       }}
     >
       <Router>
@@ -439,7 +392,7 @@ function App() {
           <ReceivingCall />
           <CallScreen />
           {flashMsg && <FlashMessage />}
-          
+
           <Routes>
             <Route path="/" element={userId ? <HomePage /> : <LandingPage />} />
             <Route

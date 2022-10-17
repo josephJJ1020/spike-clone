@@ -1,9 +1,10 @@
 import React from "react";
-import Contacts from "./Contacts";
 import Conversations from "./Conversations";
 import AddConversationButton from "./AddConversation";
 
 import CloseButton from "react-bootstrap/esm/CloseButton";
+
+import callRing from "../call/telephone-ring.mp3";
 
 import styles from "./Sidebar.module.css";
 
@@ -18,25 +19,26 @@ export default function SideBar() {
   useEffect(() => {
     const displaySidebarOnResize = () => {
       if (window.matchMedia("(min-width: 615px)").matches) {
-        dispatch(setShowSidebar(true))
+        dispatch(setShowSidebar(true));
       }
-    }
+    };
 
-    window.addEventListener('resize', displaySidebarOnResize)
-  })
+    window.addEventListener("resize", displaySidebarOnResize);
+  });
 
   return (
     <aside
       className={styles.SideBar}
       style={{ display: showSidebar ? "block" : "none" }}
     >
+
       <CloseButton
-      className={styles.CloseButton}
+        className={styles.CloseButton}
         onClick={() => {
           dispatch(setShowSidebar(false));
         }}
       />
-      <Contacts />
+      <h2>Inbox</h2>
       <Conversations />
       <AddConversationButton />
     </aside>

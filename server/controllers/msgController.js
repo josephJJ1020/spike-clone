@@ -32,6 +32,7 @@ const msgController = {
       {
         $group: {
           _id: "$_id",
+          identifier: { $first: "$identifier" },
           dateCreated: { $first: "$dateCreated" },
           participants: { $first: "$participants" },
           messages: { $push: "$messages" },
@@ -44,7 +45,12 @@ const msgController = {
           },
         },
       },
-    ])
+      {
+        $sort: {
+          identifier: 1,
+        },
+      },
+    ]);
   },
 
   lazyLoadConversation: async (convoId, latestLimit) => {
@@ -155,6 +161,7 @@ const msgController = {
 
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
   makeConversation: async (users) => {
+    console.log('making convo')
     const newConvo = new Conversation({ participants: users });
     await newConvo.save();
 
@@ -199,6 +206,7 @@ const msgController = {
               content: message.content,
               files: filesList,
               dateCreated: dateCreated ? dateCreated : Date.now(),
+              read: [user.email],
             },
           },
         },
@@ -227,6 +235,7 @@ const msgController = {
           content: message.content,
           files: filesList,
           dateCreated: dateCreated ? dateCreated : Date.now(),
+          read: [user.email],
         });
 
         await convo.save();
@@ -280,6 +289,27 @@ const msgController = {
     } else {
       return new Error("Conversation does not exist");
       // return error
+    }
+  },
+
+  // mark all convo's messages as read
+  markConvoMessagesAsRead: async (email, convoId) => {
+    const convo = await Conversation.findById(convoId);
+
+    if (convo) {
+      let newMessages = convo.messages.map((message) => {
+        if (message.read && !message.read.includes(email)) {
+          message.read.push(email);
+          return message;
+        }
+        return message;
+      });
+
+      await Conversation.findByIdAndUpdate(convo._id, {
+        messages: newMessages,
+      });
+
+      return true;
     }
   },
 };

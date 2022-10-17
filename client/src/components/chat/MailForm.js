@@ -17,7 +17,6 @@ export default function MailForm({ participants, receiverEmail }) {
     event.preventDefault();
 
     if (message.value.length) {
-
       sendMessage(
         message.value,
         uploadedFiles.map((file) => ({ filename: file.name, file: file }))
@@ -48,7 +47,7 @@ export default function MailForm({ participants, receiverEmail }) {
 
   return (
     <form className={styles.MailForm}>
-      {!participants || participants.length === 2 ? (
+      {participants.length < 2 ? (
         <div className={styles.CallButtons}>
           <button
             className={styles.callButton}

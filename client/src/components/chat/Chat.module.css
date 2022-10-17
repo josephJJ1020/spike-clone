@@ -33,7 +33,7 @@
   margin: 0;
 }
 
-.noActiveConvo {
+.noActiveConvo, .noConversations {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,8 +41,7 @@
   height: 100%;
 }
 
-
-.noActiveConvo img {
+.noConvoCat {
   margin-top: 70px;
   max-height: 500px;
   height: 60%;
@@ -102,7 +101,7 @@
   width: 100%;
 }
 
-.MailForm button {  
+.MailForm button {
   background-color: #ffb739;
   transition: background-color 0.3s;
   border: none;
@@ -132,7 +131,7 @@
   padding: 12px;
   width: 100%;
   height: 100%;
-  transition: background-color .3s;
+  transition: background-color 0.3s;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -178,12 +177,11 @@
 
 .Date {
   display: inline-block;
-  font-size: .8rem;
+  font-size: 0.8rem;
   margin-top: 10px;
 }
 
-
-@media screen and (max-width: 615px){
+@media screen and (max-width: 615px) {
   .ShowConversations {
     display: block;
   }

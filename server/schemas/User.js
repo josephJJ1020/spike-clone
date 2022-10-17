@@ -52,17 +52,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
   },
 
-  friends: {
-    type: Array,
-    default: [],
-  },
-
   conversations: {
-    type: Array,
-    default: [],
-  },
-
-  notifications: {
     type: Array,
     default: [],
   },
@@ -74,8 +64,8 @@ const UserSchema = new mongoose.Schema({
 
   appPassword: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
 });
 
 module.exports = UserSchema;

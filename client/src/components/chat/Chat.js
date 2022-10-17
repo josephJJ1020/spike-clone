@@ -39,9 +39,7 @@ export default function Chat() {
         <>
           <ChatHeader
             participants={
-              currentConvoId
-                ? currentConversation.participants
-                : null
+              currentConvoId ? currentConversation.participants : null
             }
           />
           <Mails
@@ -66,17 +64,15 @@ export default function Chat() {
             }
           />
         </>
-      ) : (
+      ) : conversations.length ? (
         <section className={styles.noActiveConvo}>
-          {onlineUsers && onlineUsers.length ? (
-            <h1>Start chatting!</h1>
-          ) : (
-            <>
-              <h1>Everyone's asleep it seems...</h1>
-              <p>Come back later!</p>
-              <img src={cat} alt="No online users" />
-            </>
-          )}
+          <h1>Start chatting!</h1>
+          <p>Open a conversation and chat with emails</p>
+        </section>
+      ) : (
+        <section className={styles.noConversations}>
+          <h1>You have no conversations... yet</h1>
+          <img src={cat} alt="No online users" className={styles.noConvoCat} />
         </section>
       )}
     </section>

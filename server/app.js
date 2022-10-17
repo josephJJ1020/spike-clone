@@ -296,60 +296,30 @@ io.on("connection", (socket) => {
     }
   );
 
-  // takes in receiverId, requesterId
-  socket.on("friend-request", async (data) => {
-    try {
-      // save a notification of type 'friend-request' to receiver's notification list
-      const friendRequest = await controller.sendFriendRequest(
-        data.requesterId,
-        data.receiverId
-      );
-
-      // send friend request event to receiver through their socket
-      const onlineUser = onlineUsers.find(
-        (user) => user.id === data.receiverId
-      );
-      if (onlineUser) {
-        io.to(onlineUser.socketId).emit("friend-request", friendRequest);
-      }
-    } catch (err) {
-      console.log(err.message);
-    }
-  });
-
-  socket.on("friend-request-action", async (data) => {
-    try {
-      const notifs = await controller.handleFriendRequest(data);
-      // update both sender and receiver notifications
-      if (notifs.senderData && notifs.accepterData) {
-        onlineUsers.forEach((user) => {
-          // look for user who accepted the friend request (data.sender)
-          if (user.id === data.sender) {
-            io.to(user.socketId).emit(
-              "accept-friend-request",
-              notifs.accepterData
-            );
-          } else if (user.id === data.receiver) {
-            // look for user who sent the friend request (data.receiver)
-            io.to(user.socketId).emit(
-              "accept-friend-request",
-              notifs.senderData
-            );
-          }
-        });
-      } else {
-        io.to(socket.id).emit("reject-friend-request", notifs.accepterData);
-      }
-    } catch (err) {
-      console.log(err.message);
-    }
+  // mark convo's messages as read (NEW)
+  socket.on("mark-all-read", async (data) => {
+    console.log(`marking convo with id ${data.convoId}'s messages as read`);
+    await msgController.markConvoMessagesAsRead(data.email, data.convoId);
   });
 
   /* --------------------- WebRTC --------------------- */
   //
-  socket.on("callRequest", (data) => {
+  socket.on("callRequest", async (data) => {
     let receiverOnline;
 
+    const sender = onlineUsers.find((user) => user.email === data.sender);
+
+    // NEW
+    const userExists = await controller.searchUserForCall(data.receiver);
+
+    if (!userExists) {
+      io.to(sender.socketId).emit("call-unavailable", {
+        sender: data.receiver,
+        receiver: data.sender,
+      });
+      return;
+    }
+    
     const receiver = onlineUsers.find((user) => user.email === data.receiver);
 
     if (receiver) {
@@ -358,8 +328,6 @@ io.on("connection", (socket) => {
     }
 
     if (!receiverOnline) {
-      const sender = onlineUsers.find((user) => user.email === data.sender);
-
       if (sender) {
         io.to(sender.socketId).emit("callee-offline", data.receiver);
       }

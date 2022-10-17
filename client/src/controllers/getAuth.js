@@ -23,7 +23,6 @@ export const getAuth = async ({
     inboundPort: null,
     outboundHost: null,
     outboundPort: null,
-    friends: [],
   };
 
   let error = null;
@@ -71,7 +70,6 @@ export const getAuth = async ({
 
   switch (action) {
     case "LOGIN":
-
       await fetchUserData({
         uri: process.env.REACT_APP_LOGIN_URI,
         email: email,
@@ -110,7 +108,6 @@ export const getAuth = async ({
           userData = setUser({
             user,
           });
-
         })
         .catch(
           (err) =>
@@ -127,7 +124,6 @@ export const getAuth = async ({
             email: user.email,
             firstName: user.first,
             lastName: user.lastName,
-            friends: user.friends,
           });
         })
         .catch(

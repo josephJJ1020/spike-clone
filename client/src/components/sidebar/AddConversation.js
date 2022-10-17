@@ -12,16 +12,19 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { setCreatingConversation } from "../../store/slices/globalsSlice";
 import { AppContext } from "../../context";
+import { setErrMsg } from "../../store/slices/callStateSlice";
 
 export const AddConversation = () => {
   const { userData } = useSelector((state) => state.userData);
   const { creatingConversation } = useSelector((state) => state.global);
+  const { conversations } = useSelector((state) => state.conversations);
   const dispatch = useDispatch();
 
   const { createNewConversation } = useContext(AppContext);
 
   const [participant, setParticipant] = useInput("");
   const [participants, setParticipants] = useState([]);
+  const [creatingConvoErr, setCreatingConvoErr] = useState("");
 
   const [warning, setWarning] = useState(null);
 
@@ -41,7 +44,61 @@ export const AddConversation = () => {
   };
 
   const createConversation = () => {
-    createNewConversation([...participants, { email: userData.email }]);
+    let convoExists = false;
+
+    if (!participants) {
+      setCreatingConvoErr("No users selected");
+
+      convoExists = true;
+      setTimeout(() => {
+        setCreatingConvoErr("");
+        return;
+      }, 2000);
+    }
+
+    let participantsForNewConversation = [
+      ...participants,
+      { email: userData.email },
+    ];
+
+    // remove duplicates
+    participantsForNewConversation = participantsForNewConversation.reduce(
+      (unique, o) => {
+        if (
+          !unique.some((obj) => obj.email === o.email && obj.value === o.value)
+        ) {
+          unique.push(o);
+        }
+        return unique;
+      },
+      []
+    );
+
+    // sort
+    participantsForNewConversation = participantsForNewConversation.sort(
+      (a, b) => a.email.localeCompare(b.email)
+    );
+
+    let identifier = participantsForNewConversation
+      .map((user) => user.email)
+      .join(",");
+
+    conversations.forEach((convo) => {
+      if (convo.identifier === identifier) {
+        setCreatingConvoErr("Conversation already exists");
+
+        convoExists = true;
+        setTimeout(() => {
+          setCreatingConvoErr("");
+          return;
+        }, 2000);
+      }
+    });
+
+    if (!convoExists) {
+      createNewConversation(participantsForNewConversation);
+      dispatch(setCreatingConversation(false));
+    }
   };
 
   const show = creatingConversation;
@@ -90,19 +147,25 @@ export const AddConversation = () => {
               <Button onClick={addParticipant}>Add participant</Button>
             </Form.Group>
           </Form>
+          <section className="text-warning">
+            {creatingConvoErr ? creatingConvoErr : null}
+          </section>
         </Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
-            onClick={() => dispatch(setCreatingConversation(false))}
+            onClick={(e) => {
+              e.preventDefault();
+              dispatch(setCreatingConversation(false));
+            }}
           >
             Close
           </Button>
           <Button
             variant="primary"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
               createConversation();
-              dispatch(setCreatingConversation(false));
             }}
           >
             Create

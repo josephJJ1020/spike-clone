@@ -4,8 +4,12 @@ const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
     conversations: [],
+    gettingConversations: false,
   },
   reducers: {
+    setGettingConversations: (state, action) => {
+      state.gettingConversations = action.payload;
+    },
     setConversations: (state, action) => {
       state.conversations = action.payload;
     },
@@ -29,5 +33,6 @@ const conversationsSlice = createSlice({
   },
 });
 
-export const { setConversations, replaceConvo } = conversationsSlice.actions;
+export const { setConversations, replaceConvo, setGettingConversations } =
+  conversationsSlice.actions;
 export default conversationsSlice.reducer;
