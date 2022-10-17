@@ -235,7 +235,7 @@ io.on("connection", (socket) => {
 
           filesList.push({
             filename: file.filename,
-            fileLink: `${process.env.SERVER_URI}/${file.filename}`,
+            fileLink: `${process.env.SERVER_URI}/api/${file.filename}`,
           });
         } catch (err) {
           console.log(err);
@@ -319,7 +319,7 @@ io.on("connection", (socket) => {
       });
       return;
     }
-    
+
     const receiver = onlineUsers.find((user) => user.email === data.receiver);
 
     if (receiver) {
