@@ -148,7 +148,13 @@ const msgController = {
     const convo = await Conversation.findOne({ identifier: identifier });
 
     if (convo) {
-      if (convo.messages.find((msg) => msg.messageId === message.messageId)) {
+      if (
+        convo.messages.find(
+          (msg) =>
+            msg.messageId === message.messageId ||
+            msg.content === message.content
+        )
+      ) {
         // do nothing
         // console.log(`message with id ${message.messagId} already exists`);
       } else {
@@ -161,7 +167,7 @@ const msgController = {
 
   // makes new conversation document in db; takes in an array of users; add convo Id to each user's conversations attribute
   makeConversation: async (users) => {
-    console.log('making convo')
+    console.log("making convo");
     const newConvo = new Conversation({ participants: users });
     await newConvo.save();
 
